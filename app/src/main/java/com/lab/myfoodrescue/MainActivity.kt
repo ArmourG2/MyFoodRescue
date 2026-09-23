@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             MyFoodRescueTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "kff",
+                        name = "kfbvf",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
