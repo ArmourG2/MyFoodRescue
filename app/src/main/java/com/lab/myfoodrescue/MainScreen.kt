@@ -199,7 +199,7 @@ fun CustomBottomNavigationBar(
                     modifier = Modifier.size(28.dp)
                 )
                 Text(
-                    text = "HOME",
+                    text = "PLACE",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (selectedTab == "HOME") Color.Black else Color.Gray
