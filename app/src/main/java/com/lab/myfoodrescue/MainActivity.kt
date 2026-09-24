@@ -19,11 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyFoodRescueTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "kfdawdeffsfwbvf",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                MainScreen()
                 }
             }
         }
