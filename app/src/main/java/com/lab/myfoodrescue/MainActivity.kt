@@ -20,6 +20,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyFoodRescueTheme {
                 MainScreen()
+                println(){
+                    "Test Text IDK"
+                }
             }
         }
     }
