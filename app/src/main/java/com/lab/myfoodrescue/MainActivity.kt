@@ -20,24 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyFoodRescueTheme {
                 MainScreen()
-                }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyFoodRescueTheme {
-        Greeting("Android")
     }
 }
