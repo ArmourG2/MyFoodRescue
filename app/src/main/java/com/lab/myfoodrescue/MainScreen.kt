@@ -1,7 +1,5 @@
 package com.lab.myfoodrescue
 
-package com.lab.myfoodrescue
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
