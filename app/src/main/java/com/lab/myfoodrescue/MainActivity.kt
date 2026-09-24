@@ -27,8 +27,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun main() {
-    println("Hello Taqif, Akmal & Ilman")
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello $name!",
+        modifier = modifier
+    )
 }
 
 @Preview(showBackground = true)
