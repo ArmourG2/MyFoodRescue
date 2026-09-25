@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_home"
+            android:title="Home"
+            android:icon="@drawable/home_icon"/>
+
+        <item
+            android:id="@+id/nav_foodbanks"
+            android:title="Food Banks"
+            android:icon="@drawable/home_icon"/>
+
+        <item
+            android:id="@+id/nav_activity"
+            android:title="Activities"
+            android:icon="@drawable/home_icon"/>
+
+        <item
+            android:id="@+id/nav_uploads"
+            android:title="Your Uploads"
+            android:icon="@drawable/home_icon"/>
+
+        <item
+            android:id="@+id/nav_statistics"
+            android:title="Statistics"
+            android:icon="@drawable/home_icon"/>
+
+        <item
+            android:id="@+id/nav_locator"
+            android:title="Maps"
+            android:icon="@drawable/home_icon"/>
+
+    </group>
+
+    <item
+        android:title="Profile">
+
+        <menu>
+
+            <item
+                android:id="@+id/nav_login"
+                android:title="Login"
+                android:icon="@drawable/home_icon"/>
+
+            <item
+                android:id="@+id/nav_profile"
+                android:title="Profile"
+                android:icon="@drawable/home_icon"/>
+
+            <item
+                android:id="@+id/nav_logout"
+                android:title="Logout"
+                android:icon="@drawable/home_icon"/>
+
+        </menu>
+
+    </item>
+
+    <item
+        android:title="Communications">
+
+        <menu>
+
+            <item
+                android:id="@+id/nav_messages"
+                android:title="Messages"
+                android:icon="@drawable/home_icon"/>
+
+            <item
+                android:id="@+id/nav_updates"
+                android:title="Updates"
+                android:icon="@drawable/home_icon"/>
+
+            <item
+                android:id="@+id/nav_settings"
+                android:title="Settings"
+                android:icon="@drawable/home_icon"/>
+
+        </menu>
+
+    </item>
+
+</menu>
