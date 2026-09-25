@@ -55,12 +55,6 @@ fun MainScreen() {
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "FRC",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
             }
 
             OutlinedTextField(
@@ -199,17 +193,12 @@ fun CustomBottomNavigationBar(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .border(2.dp, Color.Black, CircleShape)
                     .clip(CircleShape)
-                    .clickable { onTabSelected("CAMERA") }
-                    .background(if (selectedTab == "CAMERA") Color.LightGray else Color.Transparent),
+                    .clickable { onTabSelected("QR") }
+                    .background(if (selectedTab == "QR") Color.LightGray else Color.Transparent),
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .border(2.dp, Color.Black, CircleShape)
-                )
+                Icon(Icons.Default.QrCodeScanner, contentDescription = "QR")
             }
 
             // Profile Tab
