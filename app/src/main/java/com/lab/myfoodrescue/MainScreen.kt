@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lab.myfoodrescue.navigation.Screen
 import com.lab.myfoodrescue.ui.theme.MyFoodRescueTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +48,6 @@ fun MainScreen() {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Top Section: FRC Logo
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -63,7 +63,6 @@ fun MainScreen() {
                 )
             }
 
-            // 2. Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -88,7 +87,7 @@ fun MainScreen() {
                     .height(56.dp)
             )
 
-            // 3. Quick Action Buttons Container (REQS, DONORS, MAPS)
+
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black),
@@ -105,7 +104,9 @@ fun MainScreen() {
                     QuickNavItem(
                         icon = Icons.Default.Edit,
                         label = "REQS",
-                        onClick = { /* Handle REQS click */ }
+                        onClick = {
+                            Screen.RESERVATION.route
+                        }
                     )
                     QuickNavItem(
                         icon = Icons.Default.ShoppingCart,
