@@ -122,20 +122,7 @@ fun MainScreen() {
             }
 
             // 4. Main Content Area (Placeholder for feed/cards)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Main Page Content Feed",
-                    color = Color.Gray,
-                    fontSize = 16.sp
-                )
-            }
+
         }
     }
 }
