@@ -28,6 +28,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-icon = {group = "androidx.compose.material", name = "material-icons-core"}
 androidx-compose-icons-extended = {group = "androidx.compose.material", name = "material-icons-extended"}
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-navigation = {group = "androidx.navigation", name = "navigation-compose", version = "2.10.2" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

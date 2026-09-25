@@ -52,4 +52,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.icon)
     implementation(libs.androidx.compose.icons.extended)
+    implementation(libs.androidx.navigation)
 }
