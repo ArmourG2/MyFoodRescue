@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.lab.myfoodrescue.ui.screens.RoleSelectionScreen
 
 @Composable
 fun FoodRescueNavHost(
@@ -14,7 +15,11 @@ fun FoodRescueNavHost(
         startDestination = Screen.ROLE_SELECTION.route
     ) {
         composable(Screen.ROLE_SELECTION.route) {
-            // TODO: Show RoleSelectionScreen
+            RoleSelectionScreen(
+                onContinueToHome = { selectedRole ->
+                    navController.navigate(Screen.HOME.route)
+                }
+            )
         }
 
         composable(Screen.HOME.route) {
