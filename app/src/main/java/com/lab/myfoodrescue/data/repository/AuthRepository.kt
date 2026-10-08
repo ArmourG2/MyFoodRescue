@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 // ============================================================
@@ -13,7 +14,8 @@ import kotlinx.coroutines.tasks.await
 data class UserProfile(
     val username: String = "",
     val email: String = "",
-    val phone: String = ""
+    val phone: String = "",
+    val role: String? = null      // "RECIPIENT" | "COURIER" | "DONOR"
 )
 
 class AuthRepository(
@@ -61,7 +63,16 @@ class AuthRepository(
         return UserProfile(
             username = snapshot.getString("username").orEmpty(),
             email = snapshot.getString("email").orEmpty(),
-            phone = snapshot.getString("phone").orEmpty()
+            phone = snapshot.getString("phone").orEmpty(),
+            role = snapshot.getString("role")
         )
+    }
+
+    /** Stores the chosen role on the user's profile (merge, so the other
+     *  fields survive). Returns the refreshed profile. */
+    suspend fun updateRole(uid: String, role: String): UserProfile {
+        db.collection("users").document(uid)
+            .set(mapOf("role" to role), SetOptions.merge()).await()
+        return getUserProfile(uid)
     }
 }

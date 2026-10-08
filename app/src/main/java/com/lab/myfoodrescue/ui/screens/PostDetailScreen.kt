@@ -3,6 +3,7 @@ package com.lab.myfoodrescue.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,6 +52,16 @@ import com.lab.myfoodrescue.ui.theme.FlashGreenContainer
 import com.lab.myfoodrescue.ui.theme.FlashGreenDark
 
 // ============================================================
+//  Courier mode — when non-null, the detail screen swaps the
+//  recipient "Reserve" button for side-by-side courier actions.
+// ============================================================
+data class CourierDetailState(
+    val isPickedUp: Boolean = false,
+    val onPickUp: () -> Unit = {},
+    val onDelivered: () -> Unit = {}
+)
+
+// ============================================================
 //  VIEW — Post detail (opened when a surplus post card is tapped)
 //  Design per mock: photo + back arrow (NO heart icon), title +
 //  "Fresh" badge, "quantity | food type", donor/pickup details
@@ -63,33 +74,85 @@ fun PostDetailScreen(
     post: SurplusPost,
     isReserved: Boolean,
     onReserve: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    courier: CourierDetailState? = null
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             Surface(color = MaterialTheme.colorScheme.surface) {
-                Button(
-                    onClick = onReserve,
-                    enabled = !isReserved,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = FlashGreen,
-                        contentColor = Color.White,
-                        disabledContainerColor = FlashGreenContainer,
-                        disabledContentColor = FlashGreenDark
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .height(52.dp)
-                ) {
-                    Text(
-                        text = if (isReserved) "Reserved" else "Reserve",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                if (courier == null) {
+                    // ---- Recipient mode: single Reserve button ----
+                    Button(
+                        onClick = onReserve,
+                        enabled = !isReserved,
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = FlashGreen,
+                            contentColor = Color.White,
+                            disabledContainerColor = FlashGreenContainer,
+                            disabledContentColor = FlashGreenDark
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .height(52.dp)
+                    ) {
+                        Text(
+                            text = if (isReserved) "Reserved" else "Reserve",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                } else {
+                    // ---- Courier mode: side-by-side actions ----
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Button(
+                            onClick = courier.onPickUp,
+                            enabled = !courier.isPickedUp,
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = FlashGreen,
+                                contentColor = Color.White,
+                                disabledContainerColor = FlashGreenContainer,
+                                disabledContentColor = FlashGreenDark
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp)
+                        ) {
+                            Text(
+                                text = if (courier.isPickedUp) "Picked Up ✓" else "Pick Up",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Button(
+                            onClick = courier.onDelivered,
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = FlashGreenDark,
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(52.dp)
+                        ) {
+                            Text(
+                                text = "Mark as Delivered",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -148,9 +211,11 @@ fun PostDetailScreen(
                     )
                 }
 
-                // Reserved badge (top-right of photo) — appears after reserving
-                if (isReserved) {
+                // Status badge (top-right of photo): "Reserved" for recipients,
+                // "Picked Up" for the courier flow.
+                if (isReserved || courier?.isPickedUp == true) {
                     ReservedBadge(
+                        text = if (courier?.isPickedUp == true) "Picked Up" else "Reserved",
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .statusBarsPadding()
@@ -312,10 +377,10 @@ private fun MapMock(pickupPoint: String) {
 }
 
 @Composable
-private fun ReservedBadge(modifier: Modifier = Modifier) {
+private fun ReservedBadge(modifier: Modifier = Modifier, text: String = "Reserved") {
     Surface(shape = RoundedCornerShape(20.dp), color = Color.White, modifier = modifier) {
         Text(
-            text = "Reserved",
+            text = text,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,

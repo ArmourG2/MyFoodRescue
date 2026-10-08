@@ -1,6 +1,7 @@
 package com.lab.myfoodrescue.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,13 +15,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.LocalShipping
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.ShoppingBasket
+import androidx.compose.material.icons.rounded.VolunteerActivism
+import androidx.compose.material.icons.rounded.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -47,11 +55,13 @@ import com.lab.myfoodrescue.viewmodel.AuthViewModel
 @Composable
 fun ProfileScreen(
     viewModel: AuthViewModel,
-    onLoggedOut: () -> Unit
+    onLoggedOut: () -> Unit,
+    onRoleChanged: (UserRole) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showRoleDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadProfile() }
 
@@ -135,6 +145,22 @@ fun ProfileScreen(
                         icon = Icons.Rounded.Phone,
                         label = state.profile?.phone?.takeIf { it.isNotBlank() } ?: "—"
                     )
+                    Spacer(Modifier.height(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        InfoRow(
+                            icon = Icons.Rounded.Work,
+                            label = RoleSession.currentRole?.label ?: "—"
+                        )
+                        Spacer(Modifier.weight(1f))
+                        IconButton(onClick = { showRoleDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = "Change role",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -182,6 +208,74 @@ fun ProfileScreen(
             }
         )
     }
+
+    // ---- Change role dialog ----
+    if (showRoleDialog) {
+        AlertDialog(
+            onDismissRequest = { showRoleDialog = false },
+            title = { Text("Change role") },
+            text = {
+                Column {
+                    Text(
+                        text = if (state.isGuest)
+                            "Guests can switch roles for this session only."
+                        else
+                            "Pick a role — it will be saved to your account.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    UserRole.values().forEach { role ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showRoleDialog = false
+                                    RoleSession.currentRole = role
+                                    viewModel.saveRole(role.name)
+                                    onRoleChanged(role)
+                                }
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = roleIcon(role),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Text(
+                                text = role.label,
+                                fontSize = 15.sp,
+                                fontWeight = if (RoleSession.currentRole == role)
+                                    FontWeight.Bold else FontWeight.Normal,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(Modifier.weight(1f))
+                            if (RoleSession.currentRole == role) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = "Current role",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showRoleDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+}
+
+private fun roleIcon(role: UserRole) = when (role) {
+    UserRole.RECIPIENT -> Icons.Rounded.ShoppingBasket
+    UserRole.DONOR -> Icons.Rounded.VolunteerActivism
+    UserRole.COURIER -> Icons.Rounded.LocalShipping
 }
 
 @Composable

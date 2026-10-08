@@ -58,7 +58,8 @@ data class SurplusPost(
     val pickupWindow: String,
     val pickupPoint: String,
     val description: String,
-    val photoRes: Int? = null
+    val photoRes: Int? = null,
+    val id: String = ""        // courier pickup code, e.g. "FR20260045"
 )
 
 // Food types used by the filter chips and search matching

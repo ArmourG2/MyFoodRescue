@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
 // ============================================================
@@ -61,18 +62,26 @@ import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String?) -> Unit,
     onNavigateToSignUp: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Returning user with a saved Firebase session: restore it and go
+    // straight to their role's home screen (no role selection).
+    LaunchedEffect(Unit) {
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            viewModel.restoreSession()
+        }
+    }
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isLoggedIn) {
-        if (state.isLoggedIn) onLoginSuccess()
+        if (state.isLoggedIn) onLoginSuccess(state.profile?.role)
     }
 
     Surface(

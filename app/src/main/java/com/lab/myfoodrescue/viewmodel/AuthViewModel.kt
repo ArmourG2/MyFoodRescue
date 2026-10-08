@@ -80,9 +80,16 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
         }
         _uiState.update { it.copy(isLoading = true, error = null, fieldErrors = emptyMap()) }
         viewModelScope.launch {
-            runCatching { repository.login(email, password) }
-                .onSuccess {
-                    _uiState.update { st -> st.copy(isLoading = false, isLoggedIn = true) }
+            runCatching {
+                val user = repository.login(email, password)
+                // Load the saved profile (which carries the user's role) so
+                // navigation can go straight to the role's home screen.
+                runCatching { repository.getUserProfile(user.uid) }.getOrDefault(UserProfile())
+            }
+                .onSuccess { profile ->
+                    _uiState.update { st ->
+                        st.copy(isLoading = false, isLoggedIn = true, profile = profile)
+                    }
                 }
                 .onFailure { e ->
                     _uiState.update {
@@ -93,6 +100,36 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
                         )
                     }
                 }
+        }
+    }
+
+    /**
+     * Auto-login: restores an existing Firebase session (app relaunch)
+     * and loads the saved profile so the user lands directly on their
+     * role's home screen instead of the Login screen.
+     */
+    fun restoreSession() {
+        val uid = repository.currentUser?.uid ?: return
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            runCatching { repository.getUserProfile(uid) }
+                .onSuccess { p ->
+                    _uiState.update { it.copy(isLoading = false, isLoggedIn = true, profile = p) }
+                }
+                // Signed in but no profile doc (e.g. wiped Firestore):
+                // still let them in; default role is Recipient.
+                .onFailure {
+                    _uiState.update { it.copy(isLoading = false, isLoggedIn = true) }
+                }
+        }
+    }
+
+    /** Persists the role chosen at sign-up so future logins skip role selection. */
+    fun saveRole(roleName: String) {
+        val uid = repository.currentUser?.uid ?: return
+        viewModelScope.launch {
+            runCatching { repository.updateRole(uid, roleName) }
+                .onSuccess { p -> _uiState.update { it.copy(profile = p) } }
         }
     }
 

@@ -19,30 +19,36 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lab.myfoodrescue.data.repository.ReservationStatus
+import com.lab.myfoodrescue.data.repository.ReservationStore
 import com.lab.myfoodrescue.ui.screens.FilterScreen
+import com.lab.myfoodrescue.ui.screens.HistoryScreen
 import com.lab.myfoodrescue.ui.screens.HomeScreen
 import com.lab.myfoodrescue.ui.screens.PostDetailScreen
 import com.lab.myfoodrescue.ui.screens.ProfileScreen
+import com.lab.myfoodrescue.ui.screens.ReservationDetailsScreen
+import com.lab.myfoodrescue.ui.screens.ReservedScreen
 import com.lab.myfoodrescue.ui.screens.SearchFilter
 import com.lab.myfoodrescue.ui.screens.SearchScreen
 import com.lab.myfoodrescue.ui.screens.SurplusPost
+import com.lab.myfoodrescue.ui.screens.UserRole
 import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
 // ============================================================
-//  VIEW — Main app shell after login: bottom nav with
-//  Home | Search | Booking | History | Profile
-//  Also hosts the Post Detail screen and the Filter panel.
+//  VIEW — Recipient app shell (after choosing a role): bottom
+//  nav Home | Search | Reserved | History | Profile.
+//  Reserving a post creates a Reservation (auto ID) that shows
+//  up in the courier's Assigned Pickups; delivered food lands
+//  in the recipient History tab. Also hosts the Post Detail
+//  screen, Reservation Details and the Filter panel.
 // ============================================================
 
 private data class BottomNavItem(
@@ -53,13 +59,14 @@ private data class BottomNavItem(
 @Composable
 fun MainAppScreen(
     onLoggedOut: () -> Unit,
+    onSwitchRole: (UserRole) -> Unit = {},
     authViewModel: AuthViewModel = viewModel()
 ) {
     val items = remember {
         listOf(
             BottomNavItem("Home", Icons.Filled.Home),
             BottomNavItem("Search", Icons.Filled.Search),
-            BottomNavItem("Booking", Icons.Filled.Event),
+            BottomNavItem("Reserved", Icons.Filled.Event),
             BottomNavItem("History", Icons.Filled.History),
             BottomNavItem("Profile", Icons.Filled.Person)
         )
@@ -72,17 +79,36 @@ fun MainAppScreen(
     var filter by remember { mutableStateOf(SearchFilter()) }
     var showFilter by remember { mutableStateOf(false) }
 
-    // ---- Post detail navigation + reserved state (in-memory) ----
+    // ---- Navigation + reservation state (in-memory) ----
     var selectedPost by remember { mutableStateOf<SurplusPost?>(null) }
-    val reservedMap = remember { mutableStateMapOf<String, Boolean>() }
+    var selectedReservationId by remember { mutableStateOf<String?>(null) }
+
+    // Active (not yet collected) reservations drive the Reserved badges
+    val activeMap = ReservationStore.reservations
+        .filter { it.status != ReservationStatus.COLLECTED }
+        .associate { it.post.name to true }
 
     val currentPost = selectedPost
+    val currentReservationId = selectedReservationId
     when {
-        // Full-screen post detail (no bottom nav, like the mock)
+        // Full-screen reservation details (the recipient's view of a
+        // reserved post, with live status steps)
+        currentReservationId != null -> ReservationDetailsScreen(
+            reservationId = currentReservationId,
+            onBack = { selectedReservationId = null }
+        )
+
+        // Full-screen post detail (no bottom nav, like the mock).
+        // Reserving creates a reservation and jumps straight into
+        // its Reservation Details screen.
         currentPost != null -> PostDetailScreen(
             post = currentPost,
-            isReserved = reservedMap[currentPost.name] == true,
-            onReserve = { reservedMap[currentPost.name] = true },
+            isReserved = activeMap.containsKey(currentPost.name),
+            onReserve = {
+                val reservation = ReservationStore.reserve(currentPost)
+                selectedPost = null
+                selectedReservationId = reservation.id
+            },
             onBack = { selectedPost = null }
         )
 
@@ -125,7 +151,7 @@ fun MainAppScreen(
             ) {
                 when (selectedIndex) {
                     0 -> HomeScreen(
-                        reservedMap = reservedMap,
+                        reservedMap = activeMap,
                         onPostClick = { selectedPost = it }
                     )
                     1 -> SearchScreen(
@@ -134,29 +160,29 @@ fun MainAppScreen(
                         filter = filter,
                         onFilterChange = { filter = it },
                         onOpenFilter = { showFilter = true },
-                        reservedMap = reservedMap,
+                        reservedMap = activeMap,
                         onPostClick = { selectedPost = it },
                         onBackToHome = { selectedIndex = 0 }
                     )
-                    2 -> PlaceholderScreen("Booking")
-                    3 -> PlaceholderScreen("History")
+                    2 -> ReservedScreen(
+                        reservations = ReservationStore.reservations.filter {
+                            it.status != ReservationStatus.COLLECTED
+                        },
+                        onOpenReservation = { selectedReservationId = it }
+                    )
+                    3 -> HistoryScreen(
+                        reservations = ReservationStore.reservations.filter {
+                            it.status == ReservationStatus.COLLECTED
+                        },
+                        onOpenReservation = { selectedReservationId = it }
+                    )
                     4 -> ProfileScreen(
                         viewModel = authViewModel,
-                        onLoggedOut = onLoggedOut
+                        onLoggedOut = onLoggedOut,
+                        onRoleChanged = onSwitchRole
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = "$name — coming soon",
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

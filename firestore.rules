@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// ============================================================
+//  MyFoodRescue — Firestore Security Rules
+//  Paste into: Firebase Console → Firestore Database → Rules
+//  (or deploy with: firebase deploy --only firestore:rules)
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- User profiles: users/{uid} ----
+    // Each signed-in user can only read and edit their OWN profile.
+    // Guests (not signed in) can never access this collection.
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+
+      // Sign-up write: username, email, phone, createdAt (role optional)
+      allow create: if isSignedIn() && request.auth.uid == userId
+                    && request.resource.data.username is string
+                    && request.resource.data.username.size() >= 3
+                    && request.resource.data.email is string
+                    && request.resource.data.phone is string
+                    && validRole();
+
+      // Profile edits, including adding/changing the "role" field
+      // (the app writes it with a merge after the user picks or
+      // edits their role). email and createdAt stay locked.
+      allow update: if isSignedIn() && request.auth.uid == userId
+                    && request.resource.data.email == resource.data.email
+                    && request.resource.data.createdAt == resource.data.createdAt
+                    && validRole();
+
+      // Let the owner delete their own account data if you add a
+      // "Delete account" feature later.
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ---- Helpers ----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // The "role" field is optional, but when present it must be one
+    // of the three app roles: RECIPIENT, COURIER or DONOR.
+    function validRole() {
+      return !('role' in request.resource.data)
+             || request.resource.data.role in ['RECIPIENT', 'COURIER', 'DONOR'];
+    }
+
+    // ==========================================================
+    //  FUTURE COLLECTIONS (uncomment when you add them):
+    //
+    //  // Food listings: public read, owner-only edit
+    //  match /listings/{listingId} {
+    //    allow read: if true;
+    //    allow create: if isSignedIn()
+    //                  && request.resource.data.ownerId == request.auth.uid;
+    //    allow update, delete: if isSignedIn()
+    //                  && resource.data.ownerId == request.auth.uid;
+    //  }
+    //
+    //  // Reservations: recipient creates, courier updates the status
+    //  match /reservations/{reservationId} {
+    //    allow create: if isSignedIn()
+    //                  && request.resource.data.recipientId == request.auth.uid;
+    //    allow update: if isSignedIn();
+    //    allow read: if isSignedIn();
+    //  }
+    // ==========================================================
+  }
+}

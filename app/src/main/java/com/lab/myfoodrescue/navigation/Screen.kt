@@ -3,7 +3,9 @@ package com.lab.myfoodrescue.navigation
 enum class Screen(val route: String) {
     LOGIN("login"),
     SIGN_UP("sign_up"),
-    MAIN("main"),          // Holds the bottom nav: Home/Search/Booking/History/Profile
+    MAIN("main"),          // Recipient shell: bottom nav Home/Search/Reserved/Profile
+    COURIER("courier"),    // Courier shell: bottom nav Pickup/History/Profile
+    DONOR("donor"),        // Donor shell: bottom nav Home/Donate/History/Profile
 
     ROLE_SELECTION("role_selection"),
     HOME("home"),
