@@ -115,7 +115,9 @@ fun DonorAppScreen(
         ?: FirebaseAuth.getInstance().currentUser?.displayName?.takeIf { it.isNotBlank() }
         ?: "Donor"
 
-    // Donor listings that have a reservation, by status
+    // Donor listings that have a reservation, by status.
+    // Reserved posts relocate from Donate to Deliver; delivered ones
+    // relocate from Deliver to History.
     val donorReservations = ReservationStore.reservations.filter {
         it.post.id.startsWith("DL")
     }
@@ -125,6 +127,8 @@ fun DonorAppScreen(
     val historyReservations = donorReservations.filter {
         it.status == ReservationStatus.COLLECTED
     }
+    val reservedIds = donorReservations.map { it.post.id }.toSet()
+    val availableListings = DonorStore.listings.filter { it.id !in reservedIds }
 
     val listingToCancel = cancelListing
     val currentReservationId = selectedReservationId
@@ -189,7 +193,7 @@ fun DonorAppScreen(
                 when (selectedIndex) {
                     0 -> DonorDonateScreen(
                         donorName = donorName,
-                        listings = DonorStore.listings,
+                        listings = availableListings,
                         onOpenListing = { cancelListing = it }
                     )
                     1 -> DonorDeliverScreen(

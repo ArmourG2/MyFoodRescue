@@ -49,8 +49,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,7 +70,9 @@ import java.util.Locale
 private val PRESET_PHOTOS = listOf(
     R.drawable.fresh_veg, R.drawable.chicken_rice, R.drawable.butter_crois,
     R.drawable.apple, R.drawable.milk, R.drawable.veg_curry,
-    R.drawable.steam_bun, R.drawable.yogurt
+    R.drawable.steam_bun, R.drawable.yogurt, R.drawable.banana, R.drawable.beras, R.drawable.burger,
+    R.drawable.lekor, R.drawable.meggi_kari, R.drawable.roti_canai, R.drawable.sardine,
+    R.drawable.tepung
 )
 
 @Composable
@@ -88,7 +88,6 @@ fun ListFoodScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var weight by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var rangeKm by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var errors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
@@ -265,19 +264,6 @@ fun ListFoodScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Range (km) ----
-            FormField(
-                label = "Range (km)",
-                required = true,
-                value = rangeKm,
-                onValueChange = { rangeKm = it },
-                placeholder = "e.g. 2.4",
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                error = errors["rangeKm"]
-            )
-
-            Spacer(Modifier.height(12.dp))
-
             // ---- About this food ----
             Text(
                 text = "About This Food (optional)",
@@ -307,8 +293,10 @@ fun ListFoodScreen(
             // ---- Post Listing ----
             Button(
                 onClick = {
-                    val newErrors = validate(name, foodType, expireDate, weight, location, rangeKm)
+                    val newErrors = validate(name, foodType, expireDate, weight, location)
                     if (newErrors.isEmpty()) {
+                        // Range is generated automatically: a random 0.1 km – 7.0 km
+                        val randomRange = String.format(Locale.US, "%.1f", (1..70).random() / 10.0)
                         DonorStore.add(
                             DonorListing(
                                 id = DonorStore.nextId(),
@@ -317,7 +305,7 @@ fun ListFoodScreen(
                                 weight = weight.trim(),
                                 expiryDate = "Exp: $expireDate",
                                 location = location.trim(),
-                                distanceKm = "${rangeKm.trim()} km",
+                                distanceKm = "$randomRange km",
                                 description = description.trim(),
                                 photoRes = photoRes
                             )
@@ -406,7 +394,7 @@ fun ListFoodScreen(
 
 private fun validate(
     name: String, foodType: String, expireDate: String,
-    weight: String, location: String, rangeKm: String
+    weight: String, location: String
 ): Map<String, String> {
     val errors = mutableMapOf<String, String>()
     if (name.isBlank()) errors["name"] = "Food name is required."
@@ -414,8 +402,6 @@ private fun validate(
     if (expireDate.isBlank()) errors["expireDate"] = "Select a date."
     if (weight.isBlank()) errors["weight"] = "Weight is required."
     if (location.isBlank()) errors["location"] = "Location is required."
-    if (rangeKm.isBlank()) errors["rangeKm"] = "Range is required."
-    else if (rangeKm.toDoubleOrNull() == null) errors["rangeKm"] = "Enter a valid distance."
     return errors
 }
 
