@@ -3,7 +3,6 @@ package com.lab.myfoodrescue.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,12 +51,14 @@ import com.lab.myfoodrescue.ui.theme.FlashGreenContainer
 import com.lab.myfoodrescue.ui.theme.FlashGreenDark
 
 // ============================================================
-//  Courier mode — when non-null, the detail screen swaps the
-//  recipient "Reserve" button for side-by-side courier actions.
+//  Courier mode — when non-null the detail screen swaps the
+//  recipient "Reserve" button for courier actions: before the
+//  pickup is scheduled it shows "Pick Schedule" (opens the
+//  scheduling screen); afterwards "Mark as Delivered".
 // ============================================================
 data class CourierDetailState(
-    val isPickedUp: Boolean = false,
-    val onPickUp: () -> Unit = {},
+    val isScheduled: Boolean = false,
+    val onSchedule: () -> Unit = {},
     val onDelivered: () -> Unit = {}
 )
 
@@ -106,52 +107,34 @@ fun PostDetailScreen(
                         )
                     }
                 } else {
-                    // ---- Courier mode: side-by-side actions ----
-                    Row(
+                    // ---- Courier mode: schedule pickup, then deliver ----
+                    Button(
+                        onClick = if (courier.isScheduled) courier.onDelivered
+                        else courier.onSchedule,
+                        shape = RoundedCornerShape(14.dp),
+                        colors = if (courier.isScheduled) {
+                            ButtonDefaults.buttonColors(
+                                containerColor = FlashGreenDark,
+                                contentColor = Color.White
+                            )
+                        } else {
+                            ButtonDefaults.buttonColors(
+                                containerColor = FlashGreen,
+                                contentColor = Color.White
+                            )
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .navigationBarsPadding()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .height(52.dp)
                     ) {
-                        Button(
-                            onClick = courier.onPickUp,
-                            enabled = !courier.isPickedUp,
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = FlashGreen,
-                                contentColor = Color.White,
-                                disabledContainerColor = FlashGreenContainer,
-                                disabledContentColor = FlashGreenDark
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                        ) {
-                            Text(
-                                text = if (courier.isPickedUp) "Picked Up ✓" else "Pick Up",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        Button(
-                            onClick = courier.onDelivered,
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = FlashGreenDark,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                        ) {
-                            Text(
-                                text = "Mark as Delivered",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                        Text(
+                            text = if (courier.isScheduled) "Mark as Delivered"
+                            else "Pick Schedule",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
@@ -212,10 +195,10 @@ fun PostDetailScreen(
                 }
 
                 // Status badge (top-right of photo): "Reserved" for recipients,
-                // "Picked Up" for the courier flow.
-                if (isReserved || courier?.isPickedUp == true) {
+                // "Scheduled" for the courier flow after scheduling.
+                if (isReserved || courier?.isScheduled == true) {
                     ReservedBadge(
-                        text = if (courier?.isPickedUp == true) "Picked Up" else "Reserved",
+                        text = if (courier?.isScheduled == true) "Scheduled" else "Reserved",
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .statusBarsPadding()

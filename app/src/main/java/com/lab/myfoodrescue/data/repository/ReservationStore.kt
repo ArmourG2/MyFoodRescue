@@ -4,29 +4,27 @@ import androidx.compose.runtime.mutableStateListOf
 import com.lab.myfoodrescue.ui.screens.SurplusPost
 
 // ============================================================
-//  Reservation flow — a recipient reserves a post (status
-//  RESERVED), the post appears in the courier's Assigned
-//  Pickups. Courier taps "Pick Up" -> PICKUP_SCHEDULED.
-//  Courier taps "Mark as Delivered" -> COLLECTED (recipient
-//  history). In-memory for the prototype; swap for Firestore later.
+//  Reservation flow — a recipient reserves a post (RESERVED),
+//  the post appears in the courier's Assigned Pickups. Courier
+//  taps "Pick Schedule", sets date + time -> PICKUP_SCHEDULED
+//  (the reservation shows the real courier's info and the set
+//  schedule). Courier taps "Mark as Delivered" -> COLLECTED
+//  (recipient history). In-memory for the prototype.
 // ============================================================
 
 enum class ReservationStatus { RESERVED, PICKUP_SCHEDULED, COLLECTED }
 
-data class CollectorInfo(
-    val name: String = "Ahmad Rahman",
-    val title: String = "Volunteer Collector",
-    val phone: String = "+60 12-345 6789"
-)
-
 data class Reservation(
     val id: String,
     val post: SurplusPost,
+    val recipientName: String = "",     // account name of who reserved
     val status: ReservationStatus = ReservationStatus.RESERVED,
     val reservedAt: Long = System.currentTimeMillis(),
-    val pickedUpAt: Long? = null,
+    val scheduledAt: Long? = null,      // courier-scheduled pickup date
+    val scheduledTime: String = "",     // courier-scheduled time, e.g. "10:00 AM"
     val collectedAt: Long? = null,
-    val collector: CollectorInfo = CollectorInfo()
+    val courierName: String? = null,    // actual courier account name
+    val courierPhone: String? = null    // courier's profile phone (optional)
 )
 
 object ReservationStore {
@@ -39,9 +37,14 @@ object ReservationStore {
 
     fun nextId(): String = "FR2026" + (++idCounter).toString().padStart(4, '0')
 
-    /** Recipient taps Reserve: creates a reservation and shows it in the courier feed. */
-    fun reserve(post: SurplusPost): Reservation {
-        val reservation = Reservation(id = nextId(), post = post)
+    /** Recipient taps Reserve: creates a reservation (carrying the
+     *  recipient's account name) and shows it in the courier feed. */
+    fun reserve(post: SurplusPost, recipientName: String): Reservation {
+        val reservation = Reservation(
+            id = nextId(),
+            post = post,
+            recipientName = recipientName
+        )
         reservations.add(reservation)
         return reservation
     }
@@ -50,11 +53,20 @@ object ReservationStore {
     fun statusOf(id: String): ReservationStatus =
         reservations.firstOrNull { it.id == id }?.status ?: ReservationStatus.COLLECTED
 
-    /** Courier taps Pick Up. */
-    fun markPickedUp(id: String) = update(id) {
+    /** Courier sets the pickup date + time on the scheduling screen. */
+    fun schedulePickup(
+        id: String,
+        scheduledAtMillis: Long,
+        time: String,
+        courierName: String,
+        courierPhone: String?
+    ) = update(id) {
         it.copy(
             status = ReservationStatus.PICKUP_SCHEDULED,
-            pickedUpAt = System.currentTimeMillis()
+            scheduledAt = scheduledAtMillis,
+            scheduledTime = time,
+            courierName = courierName,
+            courierPhone = courierPhone
         )
     }
 

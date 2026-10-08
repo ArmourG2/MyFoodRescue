@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Person
@@ -41,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -113,15 +114,18 @@ private data class CourierNavItem(
 // One unit of courier work: a hardcoded demo pickup, or a live
 // recipient reservation coming from ReservationStore
 private data class CourierJob(
-    val key: String,           // unique key: post id or reservation id
+    val key: String,              // unique key: post id or reservation id
     val post: SurplusPost,
-    val reservationId: String? // non-null when driven by a Reservation
+    val reservationId: String?,   // non-null when driven by a Reservation
+    val recipientName: String = ""
 )
 
 // ============================================================
 //  VIEW — Courier shell: bottom nav with
-//  Pickup | History | Profile
-//  Also hosts the courier version of the Post Detail screen.
+//  Pickup | Scheduled | History | Profile
+//  Pickup tab: assigned pickups -> "Pick Schedule" opens the
+//  scheduling screen. After scheduling, the job moves to the
+//  Scheduled tab where "Mark as Delivered" completes it.
 // ============================================================
 
 @Composable
@@ -133,6 +137,7 @@ fun CourierAppScreen(
     val navItems = remember {
         listOf(
             CourierNavItem("Pickup", Icons.Filled.LocalShipping),
+            CourierNavItem("Scheduled", Icons.Filled.EventAvailable),
             CourierNavItem("History", Icons.Filled.History),
             CourierNavItem("Profile", Icons.Filled.Person)
         )
@@ -141,66 +146,90 @@ fun CourierAppScreen(
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     // ---- Courier job state ----
-    // Hardcoded demo pickups + live recipient reservations. Reservations
-    // leave Assigned Pickups automatically once delivered.
     val hardcodedJobs = remember {
         ASSIGNED_PICKUPS.map { CourierJob(key = it.id, post = it, reservationId = null) }
     }
     val removedKeys = remember { mutableStateListOf<String>() }
+    val scheduledDemoJobs = remember { mutableStateListOf<CourierJob>() }
     val deliveredJobs = remember { mutableStateListOf<CourierJob>() }
-    val pickedUpMap = remember { mutableStateMapOf<String, Boolean>() }
     var selectedJob by remember { mutableStateOf<CourierJob?>(null) }
+    var schedulingJob by remember { mutableStateOf<CourierJob?>(null) }
 
-    val storeJobs = ReservationStore.reservations
-        .filter { it.status != ReservationStatus.COLLECTED }
-        .map { CourierJob(key = it.id, post = it.post, reservationId = it.id) }
-    val assignedJobs = hardcodedJobs.filter { it.key !in removedKeys } + storeJobs
-
-    // ---- Greeting name ("Hi, <name>!") ----
+    // ---- Courier identity (real account info for reservations) ----
     val state by authViewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { authViewModel.loadProfile() }
-    val courierName = when {
-        // Guests have no Firebase user — their ViewModel flag does not
-        // survive navigation, so detect the guest by the missing user.
-        FirebaseAuth.getInstance().currentUser == null -> "Guest"
-        else -> state.profile?.username?.takeIf { it.isNotBlank() }
-            ?: FirebaseAuth.getInstance().currentUser?.displayName?.takeIf { it.isNotBlank() }
-            ?: "there"
-    }
+    val firebaseUser = FirebaseAuth.getInstance().currentUser
+    val courierName = state.profile?.username?.takeIf { it.isNotBlank() }
+        ?: firebaseUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: "there"
+    val courierPhone = state.profile?.phone?.takeIf { it.isNotBlank() }
+        ?: firebaseUser?.phoneNumber
 
+    // ---- Live recipient reservations by status ----
+    val reservedJobs = ReservationStore.reservations
+        .filter { it.status == ReservationStatus.RESERVED }
+        .map {
+            CourierJob(it.id, it.post, it.id, it.recipientName)
+        }
+    val scheduledReservationJobs = ReservationStore.reservations
+        .filter { it.status == ReservationStatus.PICKUP_SCHEDULED }
+        .map {
+            CourierJob(it.id, it.post, it.id, it.recipientName)
+        }
+
+    val pickupJobs = hardcodedJobs.filter { it.key !in removedKeys } + reservedJobs
+    val scheduledJobs = scheduledDemoJobs + scheduledReservationJobs
+
+    val currentScheduling = schedulingJob
     val currentJob = selectedJob
     when {
-        // Full-screen pickup detail (no bottom nav) — same layout as the
-        // recipient post detail, but with side-by-side courier actions.
-        // Pick Up -> "Pickup Scheduled"; Mark as Delivered -> "Collected".
-        currentJob != null -> {
-            val isPickedUp =
-                if (currentJob.reservationId != null) {
-                    ReservationStore.statusOf(currentJob.reservationId) !=
-                        ReservationStatus.RESERVED
+        // ---- Full-screen pickup scheduling (date + time) ----
+        currentScheduling != null -> PickupSchedulingScreen(
+            onBack = { schedulingJob = null },
+            onConfirm = { dateMillis, time ->
+                if (currentScheduling.reservationId != null) {
+                    ReservationStore.schedulePickup(
+                        id = currentScheduling.reservationId,
+                        scheduledAtMillis = dateMillis,
+                        time = time,
+                        courierName = courierName,
+                        courierPhone = courierPhone
+                    )
                 } else {
-                    pickedUpMap[currentJob.key] == true
+                    // Demo job: move it from Pickup to Scheduled in-memory
+                    removedKeys.add(currentScheduling.key)
+                    scheduledDemoJobs.add(currentScheduling)
                 }
+                schedulingJob = null
+                selectedJob = null
+                selectedIndex = 1   // show the Scheduled tab
+            }
+        )
+
+        // ---- Full-screen job detail ----
+        currentJob != null -> {
+            val isScheduled = if (currentJob.reservationId != null) {
+                ReservationStore.statusOf(currentJob.reservationId) !=
+                    ReservationStatus.RESERVED
+            } else {
+                scheduledDemoJobs.any { it.key == currentJob.key }
+            }
             PostDetailScreen(
                 post = currentJob.post,
                 isReserved = false,
                 onReserve = {},
                 onBack = { selectedJob = null },
                 courier = CourierDetailState(
-                    isPickedUp = isPickedUp,
-                    onPickUp = {
-                        if (currentJob.reservationId != null) {
-                            ReservationStore.markPickedUp(currentJob.reservationId)
-                        } else {
-                            pickedUpMap[currentJob.key] = true
-                        }
+                    isScheduled = isScheduled,
+                    onSchedule = {
+                        schedulingJob = currentJob
+                        selectedJob = null
                     },
                     onDelivered = {
                         if (currentJob.reservationId != null) {
                             ReservationStore.markCollected(currentJob.reservationId)
-                        } else {
-                            removedKeys.add(currentJob.key)
                         }
+                        scheduledDemoJobs.removeAll { it.key == currentJob.key }
                         deliveredJobs.add(currentJob)
                         selectedJob = null
                     }
@@ -241,27 +270,23 @@ fun CourierAppScreen(
                 when (selectedIndex) {
                     0 -> CourierPickupScreen(
                         courierName = courierName,
-                        jobs = assignedJobs,
-                        pickedUpMap = pickedUpMap,
+                        jobs = pickupJobs,
                         onOpenJob = { selectedJob = it },
-                        onPickUp = { job ->
-                            if (job.reservationId != null) {
-                                ReservationStore.markPickedUp(job.reservationId)
-                            } else {
-                                pickedUpMap[job.key] = true
-                            }
-                        },
+                        onSchedule = { schedulingJob = it }
+                    )
+                    1 -> CourierScheduledScreen(
+                        jobs = scheduledJobs,
+                        onOpenJob = { selectedJob = it },
                         onDelivered = { job ->
                             if (job.reservationId != null) {
                                 ReservationStore.markCollected(job.reservationId)
-                            } else {
-                                removedKeys.add(job.key)
                             }
+                            scheduledDemoJobs.removeAll { it.key == job.key }
                             deliveredJobs.add(job)
                         }
                     )
-                    1 -> CourierHistoryScreen(deliveredJobs)
-                    2 -> ProfileScreen(
+                    2 -> CourierHistoryScreen(deliveredJobs)
+                    3 -> ProfileScreen(
                         viewModel = authViewModel,
                         onLoggedOut = onLoggedOut,
                         onRoleChanged = onSwitchRole
@@ -273,17 +298,15 @@ fun CourierAppScreen(
 }
 
 // ============================================================
-//  Pickup tab — greeting, thank-you message, Assigned Pickups
+//  Pickup tab — greeting + Assigned Pickups ("Pick Schedule")
 // ============================================================
 
 @Composable
 private fun CourierPickupScreen(
     courierName: String,
     jobs: List<CourierJob>,
-    pickedUpMap: Map<String, Boolean>,
     onOpenJob: (CourierJob) -> Unit,
-    onPickUp: (CourierJob) -> Unit,
-    onDelivered: (CourierJob) -> Unit
+    onSchedule: (CourierJob) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -331,39 +354,38 @@ private fun CourierPickupScreen(
                 }
             }
             items(jobs) { job ->
-                val isPickedUp =
-                    if (job.reservationId != null) {
-                        ReservationStore.statusOf(job.reservationId) !=
-                            ReservationStatus.RESERVED
-                    } else {
-                        pickedUpMap[job.key] == true
-                    }
                 PickupCard(
                     code = job.key,
                     post = job.post,
-                    isPickedUp = isPickedUp,
+                    recipientLine = recipientLineFor(job),
                     onClick = { onOpenJob(job) },
-                    onPickUp = { onPickUp(job) },
-                    onDelivered = { onDelivered(job) }
+                    onSchedule = { onSchedule(job) }
                 )
             }
         }
     }
 }
 
+/** "Recipient: <actual account name>" for reservations, demo text otherwise. */
+private fun recipientLineFor(job: CourierJob): String =
+    if (job.reservationId != null && job.recipientName.isNotBlank()) {
+        "Recipient: ${job.recipientName}"
+    } else {
+        job.post.donorName
+    }
+
 // ============================================================
 //  Assigned pickup card — image placeholder, code, title, place,
-//  time, recipient, and the Pick Up / Mark as Delivered buttons.
+//  time, recipient, and the Pick Schedule button.
 // ============================================================
 
 @Composable
 private fun PickupCard(
     code: String,
     post: SurplusPost,
-    isPickedUp: Boolean,
+    recipientLine: String,
     onClick: () -> Unit,
-    onPickUp: () -> Unit,
-    onDelivered: () -> Unit
+    onSchedule: () -> Unit
 ) {
     Card(
         onClick = onClick,
@@ -424,7 +446,7 @@ private fun PickupCard(
                     Spacer(Modifier.height(4.dp))
                     PickupInfoRow(
                         Icons.Filled.Person,
-                        post.donorName,
+                        recipientLine,
                         tint = FlashGreenDark,
                         textColor = FlashGreenDark
                     )
@@ -433,50 +455,193 @@ private fun PickupCard(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Side-by-side actions ----
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = onPickUp,
-                    enabled = !isPickedUp,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = FlashGreen,
-                        contentColor = Color.White,
-                        disabledContainerColor = FlashGreenContainer,
-                        disabledContentColor = FlashGreenDark
-                    ),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                ) {
-                    Text(
-                        text = if (isPickedUp) "Picked Up ✓" else "Pick Up",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1
+            // ---- Pick Schedule (opens the scheduling screen) ----
+            Button(
+                onClick = onSchedule,
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FlashGreen,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+            ) {
+                Text(
+                    text = "Pick Schedule",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+// ============================================================
+//  Scheduled tab — pickups with a set schedule. "Mark as
+//  Delivered" completes the job (recipient status -> Collected).
+// ============================================================
+
+@Composable
+private fun CourierScheduledScreen(
+    jobs: List<CourierJob>,
+    onOpenJob: (CourierJob) -> Unit,
+    onDelivered: (CourierJob) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)
+    ) {
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "Scheduled Pickups",
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(Modifier.height(12.dp))
+
+        if (jobs.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Filled.EventAvailable,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.size(48.dp)
                     )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "No scheduled pickups yet",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Pickups you schedule will show up here.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(jobs) { job ->
+                    ScheduledCard(
+                        code = job.key,
+                        post = job.post,
+                        recipientLine = recipientLineFor(job),
+                        onClick = { onOpenJob(job) },
+                        onDelivered = { onDelivered(job) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScheduledCard(
+    code: String,
+    post: SurplusPost,
+    recipientLine: String,
+    onClick: () -> Unit,
+    onDelivered: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row {
+                Box(
+                    modifier = Modifier
+                        .size(76.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFB9C2C9)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (post.photoRes != null) {
+                        Image(
+                            painter = painterResource(post.photoRes),
+                            contentDescription = post.name,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Image,
+                            contentDescription = null,
+                            tint = Color(0xFFE4E9EC),
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
-                Button(
-                    onClick = onDelivered,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = FlashGreenDark,
-                        contentColor = Color.White
-                    ),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                ) {
+                Spacer(Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Mark as Delivered",
-                        fontSize = 13.sp,
+                        text = "#$code",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "${post.name}  •  ${post.quantity}",
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        maxLines = 1
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    PickupInfoRow(Icons.Rounded.LocationOn, post.location)
+                    Spacer(Modifier.height(4.dp))
+                    PickupInfoRow(Icons.Rounded.Schedule, post.pickupWindow)
+                    Spacer(Modifier.height(4.dp))
+                    PickupInfoRow(
+                        Icons.Filled.Person,
+                        recipientLine,
+                        tint = FlashGreenDark,
+                        textColor = FlashGreenDark
                     )
                 }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // ---- Mark as Delivered ----
+            Button(
+                onClick = onDelivered,
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = FlashGreenDark,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+            ) {
+                Text(
+                    text = "Mark as Delivered",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1
+                )
             }
         }
     }

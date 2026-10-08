@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.lab.myfoodrescue.data.repository.ReservationStatus
 import com.lab.myfoodrescue.data.repository.ReservationStore
 import com.lab.myfoodrescue.ui.screens.FilterScreen
@@ -88,6 +89,11 @@ fun MainAppScreen(
         .filter { it.status != ReservationStatus.COLLECTED }
         .associate { it.post.name to true }
 
+    // Name shown on the reservation (the actual recipient account)
+    val recipientName = authViewModel.uiState.value.profile?.username?.takeIf { it.isNotBlank() }
+        ?: FirebaseAuth.getInstance().currentUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: "Guest"
+
     val currentPost = selectedPost
     val currentReservationId = selectedReservationId
     when {
@@ -105,7 +111,7 @@ fun MainAppScreen(
             post = currentPost,
             isReserved = activeMap.containsKey(currentPost.name),
             onReserve = {
-                val reservation = ReservationStore.reserve(currentPost)
+                val reservation = ReservationStore.reserve(currentPost, recipientName)
                 selectedPost = null
                 selectedReservationId = reservation.id
             },

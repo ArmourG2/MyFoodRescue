@@ -65,8 +65,11 @@ import java.util.Locale
 // ============================================================
 //  VIEW — Reservation Details (recipient). Shown right after
 //  tapping Reserve, or when opening a reserved post. Live
-//  status: Reserved -> Pickup Scheduled (courier taps Pick Up)
-//  -> Collected (courier taps Mark as Delivered).
+//  status: Reserved -> Pickup Scheduled (courier sets the
+//  schedule) -> Collected (courier marks delivered).
+//  Collector Information and Pickup Schedule only appear once
+//  the courier has scheduled a pickup, and then show the real
+//  courier's account name and the chosen date/time.
 // ============================================================
 
 @Composable
@@ -200,114 +203,118 @@ fun ReservationDetailsScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // ---- Collector information ----
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Collector Information",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(FlashGreenContainer, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Person,
-                                contentDescription = null,
-                                tint = FlashGreenDark,
-                                modifier = Modifier.size(26.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = reservation.collector.name,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = reservation.collector.title,
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+            // ---- Collector information (only after the courier scheduled) ----
+            if (reservation.courierName != null) {
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Collector Information",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(FlashGreenContainer, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Phone,
+                                    imageVector = Icons.Rounded.Person,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(14.dp)
+                                    tint = FlashGreenDark,
+                                    modifier = Modifier.size(26.dp)
                                 )
-                                Spacer(Modifier.width(4.dp))
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
                                 Text(
-                                    text = reservation.collector.phone,
+                                    text = reservation.courierName,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                                Text(
+                                    text = "Volunteer Collector",
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                if (!reservation.courierPhone.isNullOrBlank()) {
+                                    Spacer(Modifier.height(4.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Phone,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = reservation.courierPhone,
+                                            fontSize = 13.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // ---- Pickup schedule ----
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Pickup Schedule",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Event,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
+            // ---- Pickup schedule (only after the courier scheduled) ----
+            if (reservation.scheduledAt != null) {
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = formatDate(reservation.reservedAt, "d MMM yyyy") +
-                                ", " + reservation.post.pickupWindow,
-                            fontSize = 13.sp,
+                            text = "Pickup Schedule",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.LocationOn,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = reservation.post.pickupPoint,
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Spacer(Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Event,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = formatDate(reservation.scheduledAt, "d MMM yyyy") +
+                                    ", " + reservation.scheduledTime,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = reservation.post.pickupPoint,
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
             }
@@ -326,7 +333,7 @@ fun ReservationDetailsScreen(
                     .fillMaxWidth()
                     .height(52.dp)
             ) {
-                Text(text = "Update Status", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Text(text = "Status", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             }
 
             Spacer(Modifier.height(24.dp))
@@ -347,8 +354,8 @@ fun ReservationDetailsScreen(
 
 // ============================================================
 //  Progress steps — Reserved (always checked) / Pickup
-//  Scheduled (courier tapped Pick Up) / Collected (courier
-//  tapped Mark as Delivered).
+//  Scheduled (courier set the schedule) / Collected (courier
+//  marked as delivered).
 // ============================================================
 
 @Composable
@@ -361,7 +368,11 @@ private fun ProgressSteps(reservation: Reservation) {
     )
     val dates = listOf(
         formatDatePair(reservation.reservedAt),
-        reservation.pickedUpAt?.let { formatDatePair(it) } ?: ("" to ""),
+        if (reservation.scheduledAt != null) {
+            formatDate(reservation.scheduledAt, "d MMM") to reservation.scheduledTime
+        } else {
+            "" to ""
+        },
         reservation.collectedAt?.let { formatDatePair(it) } ?: ("" to "")
     )
 
@@ -477,12 +488,12 @@ private fun statusLabel(status: ReservationStatus) = when (status) {
 
 private fun statusMessage(status: ReservationStatus) = when (status) {
     ReservationStatus.RESERVED ->
-        "Your reservation is confirmed. A volunteer collector will pick up " +
-            "your food at the scheduled time."
+        "Your reservation is confirmed. A volunteer collector will schedule " +
+            "the pickup soon."
     ReservationStatus.PICKUP_SCHEDULED ->
-        "The courier has picked up your food and is on the way to you."
+        "The courier has scheduled your pickup. Check the schedule below."
     ReservationStatus.COLLECTED ->
-        "Your food has been collected. Enjoy!"
+        "Your food has been delivered. Enjoy!"
 }
 
 private fun formatDate(millis: Long, pattern: String): String =
