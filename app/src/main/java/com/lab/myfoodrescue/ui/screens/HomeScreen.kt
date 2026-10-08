@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lab.myfoodrescue.R
+import com.lab.myfoodrescue.data.repository.DonorStore
+import com.lab.myfoodrescue.data.repository.toSurplusPost
 import com.lab.myfoodrescue.ui.theme.FlashGreen
 
 
@@ -64,6 +67,10 @@ data class SurplusPost(
 
 // Food types used by the filter chips and search matching
 val FOOD_TYPES = listOf("Vegetables", "Fruits", "Dairy", "Bakery", "Prepared Meals")
+
+// The full recipient feed: built-in posts + live donor listings
+fun allPosts(): List<SurplusPost> =
+    SURPLUS_POSTS + DonorStore.listings.map { it.toSurplusPost() }
 
 
 val SURPLUS_POSTS = listOf(
@@ -202,6 +209,7 @@ fun HomeScreen(
                 .padding(innerPadding)
         ) {
             // ---- Section header ----
+            val posts = remember(DonorStore.listings.size) { allPosts() }
             Row(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier
@@ -216,7 +224,7 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = "${SURPLUS_POSTS.size} available",
+                    text = "${posts.size} available",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -232,7 +240,7 @@ fun HomeScreen(
                 ),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(SURPLUS_POSTS) { post ->
+                items(posts) { post ->
                     SurplusCard(
                         post = post,
                         isReserved = reservedMap[post.name] == true,

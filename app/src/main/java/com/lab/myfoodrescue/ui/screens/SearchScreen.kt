@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lab.myfoodrescue.data.repository.DonorStore
 import com.lab.myfoodrescue.ui.theme.FlashGreen
 
 // ============================================================
@@ -79,8 +80,9 @@ fun SearchScreen(
     onBackToHome: () -> Unit
 ) {
     // Matches the food NAME or the FOOD TYPE + applied filters
-    val results = remember(searchText, filter) {
-        SURPLUS_POSTS.filter { post ->
+    // (includes live donor listings from DonorStore)
+    val results = remember(searchText, filter, DonorStore.listings.size) {
+        allPosts().filter { post ->
             val query = searchText.trim()
             val matchesSearch = query.isEmpty() ||
                 post.name.contains(query, ignoreCase = true) ||
