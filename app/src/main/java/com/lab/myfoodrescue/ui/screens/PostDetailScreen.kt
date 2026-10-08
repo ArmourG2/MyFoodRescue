@@ -216,17 +216,6 @@ fun PostDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(Modifier.height(20.dp))
-
-                // ---- Location (hardcoded Malaysia) ----
-                Text(
-                    text = "Location",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = FlashGreen
-                )
-                Spacer(Modifier.height(10.dp))
-                MapMock(pickupPoint = post.pickupPoint)
             }
         }
     }

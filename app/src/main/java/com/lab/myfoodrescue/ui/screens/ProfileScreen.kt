@@ -107,7 +107,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(12.dp))
             Text(
-                text = name.ifBlank { "Flash Food User" },
+                text = name.ifBlank { "Guest" },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold
             )
