@@ -2,6 +2,7 @@ package com.lab.myfoodrescue.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lab.myfoodrescue.data.repository.AppSync
 import com.lab.myfoodrescue.data.repository.AuthRepository
 import com.lab.myfoodrescue.data.repository.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,6 +91,8 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
                     _uiState.update { st ->
                         st.copy(isLoading = false, isLoggedIn = true, profile = profile)
                     }
+                    // Fresh user -> re-attach sync listeners cleanly.
+                    AppSync.onUserChanged()
                 }
                 .onFailure { e ->
                     _uiState.update {
@@ -115,6 +118,8 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
             runCatching { repository.getUserProfile(uid) }
                 .onSuccess { p ->
                     _uiState.update { it.copy(isLoading = false, isLoggedIn = true, profile = p) }
+                    // Fresh user -> re-attach sync listeners cleanly.
+                    AppSync.onUserChanged()
                 }
                 // Signed in but no profile doc (e.g. wiped Firestore):
                 // still let them in; default role is Recipient.
@@ -133,8 +138,11 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
         }
     }
 
-    /** Skips Firebase auth entirely and enters the app as a guest. */
+    /** Skips Firebase auth entirely and enters the app as a guest.
+     *  AppSync has already signed them in anonymously so Firestore
+     *  rules accept their reads/writes. */
     fun loginAsGuest() {
+        AppSync.onUserChanged()
         _uiState.update {
             it.copy(
                 isLoading = false,
@@ -198,6 +206,8 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
 
     fun logout() {
         repository.logout()
+        // Detach Firestore sync so shared data doesn't leak between users.
+        AppSync.stop()
         _uiState.value = AuthUiState() // reset state so the next login starts clean
     }
 

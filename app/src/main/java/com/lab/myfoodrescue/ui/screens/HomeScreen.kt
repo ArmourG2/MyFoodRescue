@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lab.myfoodrescue.R
 import com.lab.myfoodrescue.data.repository.DonorStore
+import com.lab.myfoodrescue.data.repository.PostStore
 import com.lab.myfoodrescue.data.repository.toSurplusPost
 import com.lab.myfoodrescue.ui.theme.FlashGreen
 
@@ -62,15 +63,16 @@ data class SurplusPost(
     val pickupPoint: String,
     val description: String,
     val photoRes: Int? = null,
-    val id: String = ""        // courier pickup code, e.g. "FR20260045"
+    val id: String = "",          // source listing/post id, or courier code
+    val kind: String = "post"     // "post" (restaurant feed) | "listing" (donor)
 )
 
 // Food types used by the filter chips and search matching
 val FOOD_TYPES = listOf("Vegetables", "Fruits", "Dairy", "Bakery", "Prepared Meals")
 
-// The full recipient feed: built-in posts + live donor listings
+// The full recipient feed: Firestore-synced restaurant posts + donor listings
 fun allPosts(): List<SurplusPost> =
-    SURPLUS_POSTS + DonorStore.listings.map { it.toSurplusPost() }
+    PostStore.posts + DonorStore.listings.map { it.toSurplusPost() }
 
 
 val SURPLUS_POSTS = listOf(
@@ -209,7 +211,7 @@ fun HomeScreen(
                 .padding(innerPadding)
         ) {
             // ---- Section header ----
-            val posts = remember(DonorStore.listings.size) { allPosts() }
+            val posts = remember(DonorStore.listings.size, PostStore.posts.size) { allPosts() }
             Row(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier

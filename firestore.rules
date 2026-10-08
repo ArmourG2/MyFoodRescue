@@ -4,6 +4,7 @@ rules_version = '2';
 //  MyFoodRescue — Firestore Security Rules
 //  Paste into: Firebase Console → Firestore Database → Rules
 //  (or deploy with: firebase deploy --only firestore:rules)
+//  Prototype-level: broad read access, identity-checked writes.
 // ============================================================
 
 service cloud.firestore {
@@ -11,7 +12,7 @@ service cloud.firestore {
 
     // ---- User profiles: users/{uid} ----
     // Each signed-in user can only read and edit their OWN profile.
-    // Guests (not signed in) can never access this collection.
+    // Guests (anonymous auth) read their own too.
     match /users/{userId} {
       allow read: if isSignedIn() && request.auth.uid == userId;
 
@@ -23,17 +24,66 @@ service cloud.firestore {
                     && request.resource.data.phone is string
                     && validRole();
 
-      // Profile edits, including adding/changing the "role" field
-      // (the app writes it with a merge after the user picks or
-      // edits their role). email and createdAt stay locked.
+      // Profile edits, including adding/changing the "role" field.
+      // email and createdAt stay locked.
       allow update: if isSignedIn() && request.auth.uid == userId
                     && request.resource.data.email == resource.data.email
                     && request.resource.data.createdAt == resource.data.createdAt
                     && validRole();
 
-      // Let the owner delete their own account data if you add a
-      // "Delete account" feature later.
+      // Owner-only account data deletion.
       allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ---- Restaurant feed posts: posts/{postId} ----
+    // Seeded by the app; read-only for clients.
+    match /posts/{postId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ---- Donor listings: listings/{listingId} ----
+    // Public read; only the signed-in donor that created a listing
+    // (or anyone, for owner-less seeded demo listings) can delete it.
+    match /listings/{listingId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.foodType is string;
+      allow update, delete: if isSignedIn()
+                    && (resource.data.ownerId == null
+                        || resource.data.ownerId == request.auth.uid);
+    }
+
+    // ---- Reservations: reservations/{reservationId} ----
+    // Created by the recipient; status updates flow
+    // RESERVED -> PICKUP_SCHEDULED -> COLLECTED (any signed-in user
+    // may play the courier role in this prototype). The embedded
+    // post and recipient identity must never be rewritten.
+    match /reservations/{reservationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.recipientId == request.auth.uid
+                    && request.resource.data.status == 'RESERVED';
+      allow update: if isSignedIn()
+                    && request.resource.data.status != resource.data.status
+                    && request.resource.data.status in ['PICKUP_SCHEDULED', 'COLLECTED']
+                    && resource.data.status != 'COLLECTED'
+                    && request.resource.data.post == resource.data.post
+                    && request.resource.data.recipientId == resource.data.recipientId;
+      allow delete: if isSignedIn()
+                    && resource.data.recipientId == request.auth.uid
+                    && resource.data.status == 'RESERVED';
+    }
+
+    // ---- Seed marker: meta/seed ----
+    // Read by any signed-in user; any signed-in user may create it
+    // if seeding hasn't happened yet.
+    match /meta/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false;
     }
 
     // ---- Helpers ----
@@ -47,26 +97,5 @@ service cloud.firestore {
       return !('role' in request.resource.data)
              || request.resource.data.role in ['RECIPIENT', 'COURIER', 'DONOR'];
     }
-
-    // ==========================================================
-    //  FUTURE COLLECTIONS (uncomment when you add them):
-    //
-    //  // Food listings: public read, owner-only edit
-    //  match /listings/{listingId} {
-    //    allow read: if true;
-    //    allow create: if isSignedIn()
-    //                  && request.resource.data.ownerId == request.auth.uid;
-    //    allow update, delete: if isSignedIn()
-    //                  && resource.data.ownerId == request.auth.uid;
-    //  }
-    //
-    //  // Reservations: recipient creates, courier updates the status
-    //  match /reservations/{reservationId} {
-    //    allow create: if isSignedIn()
-    //                  && request.resource.data.recipientId == request.auth.uid;
-    //    allow update: if isSignedIn();
-    //    allow read: if isSignedIn();
-    //  }
-    // ==========================================================
   }
 }
