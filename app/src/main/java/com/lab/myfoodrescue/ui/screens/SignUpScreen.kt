@@ -1,4 +1,4 @@
-package com.lab.myfoodrescue.ui.screens
+ package com.lab.myfoodrescue.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
