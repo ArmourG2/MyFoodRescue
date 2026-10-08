@@ -60,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.lab.myfoodrescue.data.repository.ReservationStatus
 import com.lab.myfoodrescue.data.repository.ReservationStore
+import com.lab.myfoodrescue.data.repository.displayCode
 import com.lab.myfoodrescue.ui.screens.CourierDetailState
 import com.lab.myfoodrescue.ui.screens.PostDetailScreen
 import com.lab.myfoodrescue.ui.screens.ProfileScreen
@@ -117,7 +118,8 @@ private data class CourierJob(
     val key: String,              // unique key: post id or reservation id
     val post: SurplusPost,
     val reservationId: String?,   // non-null when driven by a Reservation
-    val recipientName: String = ""
+    val recipientName: String = "",
+    val code: String = ""         // display code shown on the card
 )
 
 // ============================================================
@@ -169,16 +171,26 @@ fun CourierAppScreen(
     val reservedJobs = ReservationStore.reservations
         .filter { it.status == ReservationStatus.RESERVED }
         .map {
-            CourierJob(it.id, it.post, it.id, it.recipientName)
+            CourierJob(it.id, it.post, it.id, it.recipientName, it.displayCode)
         }
+    // Scheduled jobs from the store (from any device).
     val scheduledReservationJobs = ReservationStore.reservations
         .filter { it.status == ReservationStatus.PICKUP_SCHEDULED }
         .map {
-            CourierJob(it.id, it.post, it.id, it.recipientName)
+            CourierJob(it.id, it.post, it.id, it.recipientName, it.displayCode)
         }
 
     val pickupJobs = hardcodedJobs.filter { it.key !in removedKeys } + reservedJobs
     val scheduledJobs = scheduledDemoJobs + scheduledReservationJobs
+
+    // History: jobs delivered on this device + reservations the store
+    // says are COLLECTED (delivered from any device), deduplicated.
+    val deliveredReservationJobs = ReservationStore.reservations
+        .filter { it.status == ReservationStatus.COLLECTED }
+        .map { CourierJob(it.id, it.post, it.id, it.recipientName, it.displayCode) }
+    val historyJobs = deliveredJobs + deliveredReservationJobs.filter { collected ->
+        deliveredJobs.none { it.key == collected.key }
+    }
 
     val currentScheduling = schedulingJob
     val currentJob = selectedJob
@@ -285,7 +297,7 @@ fun CourierAppScreen(
                             deliveredJobs.add(job)
                         }
                     )
-                    2 -> CourierHistoryScreen(deliveredJobs)
+                    2 -> CourierHistoryScreen(historyJobs)
                     3 -> ProfileScreen(
                         viewModel = authViewModel,
                         onLoggedOut = onLoggedOut,
@@ -355,7 +367,7 @@ private fun CourierPickupScreen(
             }
             items(jobs) { job ->
                 PickupCard(
-                    code = job.key,
+                    code = job.code.ifBlank { job.key },
                     post = job.post,
                     recipientLine = recipientLineFor(job),
                     onClick = { onOpenJob(job) },
@@ -538,7 +550,7 @@ private fun CourierScheduledScreen(
             ) {
                 items(jobs) { job ->
                     ScheduledCard(
-                        code = job.key,
+                        code = job.code.ifBlank { job.key },
                         post = job.post,
                         recipientLine = recipientLineFor(job),
                         onClick = { onOpenJob(job) },
@@ -725,7 +737,7 @@ private fun CourierHistoryScreen(jobs: List<CourierJob>) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(jobs) { job ->
-                    DeliveredCard(code = job.key, post = job.post)
+                    DeliveredCard(code = job.code.ifBlank { job.key }, post = job.post)
                 }
             }
         }

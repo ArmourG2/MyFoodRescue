@@ -64,6 +64,7 @@ import com.lab.myfoodrescue.data.repository.DonorStore
 import com.lab.myfoodrescue.data.repository.Reservation
 import com.lab.myfoodrescue.data.repository.ReservationStatus
 import com.lab.myfoodrescue.data.repository.ReservationStore
+import com.lab.myfoodrescue.data.repository.displayCode
 import com.lab.myfoodrescue.ui.screens.ProfileScreen
 import com.lab.myfoodrescue.ui.screens.ReservationDetailsScreen
 import com.lab.myfoodrescue.ui.screens.UserRole
@@ -117,9 +118,11 @@ fun DonorAppScreen(
 
     // Donor listings that have a reservation, by status.
     // Reserved posts relocate from Donate to Deliver; delivered ones
-    // relocate from Deliver to History.
+    // relocate from Deliver to History. (Reservation.post.kind ==
+    // "listing" marks donor listings, so restaurant posts never
+    // show up in the donor's tabs.)
     val donorReservations = ReservationStore.reservations.filter {
-        it.post.id.startsWith("DL")
+        it.post.kind == "listing"
     }
     val deliverReservations = donorReservations.filter {
         it.status != ReservationStatus.COLLECTED
@@ -566,7 +569,7 @@ private fun ReservationCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "#${reservation.id}",
+                    text = "#${reservation.displayCode}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground

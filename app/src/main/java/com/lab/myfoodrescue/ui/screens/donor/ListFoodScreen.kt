@@ -299,7 +299,6 @@ fun ListFoodScreen(
                         val randomRange = String.format(Locale.US, "%.1f", (1..70).random() / 10.0)
                         DonorStore.add(
                             DonorListing(
-                                id = DonorStore.nextId(),
                                 name = name.trim(),
                                 foodType = foodType,
                                 weight = weight.trim(),
