@@ -213,15 +213,7 @@ fun LoginScreen(
                 }
             }
 
-            TextButton(
-                onClick = { /* TODO: Forgot password flow */ },
-                modifier = Modifier.padding(top = 4.dp)
-            ) {
-                Text("Forgot Password?", color = MaterialTheme.colorScheme.primary)
-            }
-
-            Spacer(Modifier.weight(1f))
-
+            Spacer(Modifier.height(16.dp))
             // ---- Divider: or ----
             Row(
                 verticalAlignment = Alignment.CenterVertically,

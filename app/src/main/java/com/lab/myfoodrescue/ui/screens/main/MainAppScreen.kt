@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.lab.myfoodrescue.ui.screens.HomeScreen
 import com.lab.myfoodrescue.ui.screens.ProfileScreen
 import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
@@ -88,7 +89,7 @@ fun MainAppScreen(
                 .padding(innerPadding)
         ) {
             when (selectedIndex) {
-                0 -> PlaceholderScreen("Home")
+                0 -> HomeScreen()
                 1 -> PlaceholderScreen("Search")
                 2 -> PlaceholderScreen("Booking")
                 3 -> PlaceholderScreen("History")
