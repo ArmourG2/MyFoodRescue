@@ -2,4 +2,7 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
+
+    // Google services Gradle plugin (Firebase)
+    alias(libs.plugins.google.services) apply false
 }

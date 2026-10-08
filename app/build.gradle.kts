@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+
+    // Google services Gradle plugin (Firebase)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -34,6 +37,10 @@ android {
 }
 
 dependencies {
+    // Firebase (versions managed by the Firebase BoM)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

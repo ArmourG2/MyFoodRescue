@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "930969884881",
+    "project_id": "flashfoodrescue",
+    "storage_bucket": "flashfoodrescue.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930969884881:android:86a653f4bd2285376d4df0",
+        "android_client_info": {
+          "package_name": "com.lab.myfoodrescue"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "930969884881-ueck9lj4m0n3aike58cpj1ldfmbl80pp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lab.myfoodrescue",
+            "certificate_hash": "2a021692fd2f6aadcb17d6645b5807a402729090"
+          }
+        },
+        {
+          "client_id": "930969884881-qh27me0jaeadst1qclve2er060snlm1b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7_UZJRglK2OP-FBYs7mWEgaoHOXf0pgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "930969884881-qh27me0jaeadst1qclve2er060snlm1b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

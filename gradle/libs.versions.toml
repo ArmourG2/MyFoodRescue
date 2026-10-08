@@ -11,6 +11,8 @@ composeBom = "2026.02.01"
 material3 = "1.4.0"
 appcompat = "1.8.0"
 material = "1.13.0"
+googleServices = "4.5.0"
+firebaseBom = "34.19.0"
 
 [libraries]
 material = { module = "com.google.android.material:material", version.ref = "material"}
@@ -33,7 +35,10 @@ androidx-compose-icons-extended = {group = "androidx.compose.material", name = "
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-navigation = {group = "androidx.navigation", name = "navigation-compose", version = "2.10.2" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 

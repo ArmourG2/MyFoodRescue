@@ -201,7 +201,7 @@ fun CustomBottomNavigationBar(
                 Icon(Icons.Default.QrCodeScanner, contentDescription = "QR")
             }
 
-            // Profile Tab
+            // Profile Tab  
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
