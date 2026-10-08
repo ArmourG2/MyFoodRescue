@@ -76,8 +76,13 @@ fun ProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             // ---- Avatar with initials ----
-            val name = state.profile?.username
-                ?: com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.displayName.orEmpty()
+            val name = if (state.isGuest) {
+                "Guest"
+            } else {
+                state.profile?.username
+                    ?: com.google.firebase.auth.FirebaseAuth.getInstance()
+                        .currentUser?.displayName.orEmpty()
+            }
             val initials = name.takeIf { it.isNotBlank() }
                 ?.split(" ")
                 ?.mapNotNull { it.firstOrNull() }
@@ -120,7 +125,8 @@ fun ProfileScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     InfoRow(
                         icon = Icons.Rounded.Email,
-                        label = state.profile?.email
+                        label = if (state.isGuest) "Browsing as guest"
+                        else state.profile?.email
                             ?: com.google.firebase.auth.FirebaseAuth.getInstance()
                                 .currentUser?.email.orEmpty()
                     )

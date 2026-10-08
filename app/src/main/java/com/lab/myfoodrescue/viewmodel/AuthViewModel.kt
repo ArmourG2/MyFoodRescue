@@ -20,6 +20,7 @@ data class AuthUiState(
     val error: String? = null,                       // top-level error (banner text)
     val fieldErrors: Map<String, String> = emptyMap(), // per-field validation errors
     val isLoggedIn: Boolean = false,
+    val isGuest: Boolean = false,                    // true when user skipped login
     val profile: UserProfile? = null                 // loaded profile for Profile screen
 )
 
@@ -92,6 +93,19 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
                         )
                     }
                 }
+        }
+    }
+
+    /** Skips Firebase auth entirely and enters the app as a guest. */
+    fun loginAsGuest() {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                isLoggedIn = true,
+                isGuest = true,
+                error = null,
+                fieldErrors = emptyMap()
+            )
         }
     }
 

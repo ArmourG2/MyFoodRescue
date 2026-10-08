@@ -1,8 +1,7 @@
 package com.lab.myfoodrescue.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +38,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,13 +50,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
 // ============================================================
-//  VIEW — Create Account (username, email, phone, password)
+//  VIEW — Sign up screen: creates a fresh account (username,
+//  email, phone, password) and signs the user straight in.
 // ============================================================
 
 @Composable
 fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
-    onNavigateBack: () -> Unit,
+    onBackToLogin: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,6 +68,7 @@ fun SignUpScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var confirmVisible by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.isLoggedIn) {
         if (state.isLoggedIn) onSignUpSuccess()
@@ -88,105 +87,168 @@ fun SignUpScreen(
         ) {
             Spacer(Modifier.height(48.dp))
 
-            // ---- Logo ----
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        ),
-                        shape = RoundedCornerShape(20.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Person,
-                    contentDescription = "Create account",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(36.dp)
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
+            // ---- Title ----
             Text(
                 text = "Create Account",
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            Spacer(Modifier.height(4.dp))
+
+            Spacer(Modifier.height(8.dp))
             Text(
-                text = "Join Flash Food Rescue",
+                text = "Join Flash Food and start rescuing surplus food",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(32.dp))
 
-            AuthField(
+            // ---- Username field ----
+            OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
-                label = "Username",
-                icon = Icons.Rounded.Person,
-                keyboardType = KeyboardType.Text,
-                error = state.fieldErrors["username"]
+                onValueChange = { username = it; viewModel.clearError() },
+                placeholder = { Text("Username") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Rounded.Person,
+                        contentDescription = "Username",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = state.fieldErrors.containsKey("username"),
+                supportingText = state.fieldErrors["username"]
+                    ?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(12.dp))
 
-            AuthField(
+            // ---- Email field ----
+            OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
-                label = "Email address",
-                icon = Icons.Rounded.Email,
-                keyboardType = KeyboardType.Email,
-                error = state.fieldErrors["email"]
+                onValueChange = { email = it; viewModel.clearError() },
+                placeholder = { Text("Email address") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Rounded.Email,
+                        contentDescription = "Email",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = state.fieldErrors.containsKey("email"),
+                supportingText = state.fieldErrors["email"]
+                    ?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(12.dp))
 
-            AuthField(
+            // ---- Phone field ----
+            OutlinedTextField(
                 value = phone,
-                onValueChange = { phone = it },
-                label = "Phone number",
-                icon = Icons.Rounded.Phone,
-                keyboardType = KeyboardType.Phone,
-                error = state.fieldErrors["phone"]
+                onValueChange = { phone = it; viewModel.clearError() },
+                placeholder = { Text("Phone number") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Rounded.Phone,
+                        contentDescription = "Phone",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = state.fieldErrors.containsKey("phone"),
+                supportingText = state.fieldErrors["phone"]
+                    ?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(12.dp))
 
-            AuthField(
+            // ---- Password field ----
+            OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
-                label = "Password",
-                icon = Icons.Rounded.Lock,
-                keyboardType = KeyboardType.Password,
-                error = state.fieldErrors["password"],
-                isPassword = true,
-                passwordVisible = passwordVisible,
-                onTogglePassword = { passwordVisible = !passwordVisible }
+                onValueChange = { password = it; viewModel.clearError() },
+                placeholder = { Text("Password") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Rounded.Lock,
+                        contentDescription = "Password",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff
+                            else Icons.Rounded.Visibility,
+                            contentDescription = if (passwordVisible) "Hide password"
+                            else "Show password",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = state.fieldErrors.containsKey("password"),
+                supportingText = state.fieldErrors["password"]
+                    ?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(Modifier.height(12.dp))
 
-            AuthField(
+            // ---- Confirm password field ----
+            OutlinedTextField(
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = "Confirm password",
-                icon = Icons.Rounded.Lock,
-                keyboardType = KeyboardType.Password,
-                error = state.fieldErrors["confirmPassword"],
-                isPassword = true,
-                passwordVisible = passwordVisible,
-                onTogglePassword = { passwordVisible = !passwordVisible }
+                onValueChange = { confirmPassword = it; viewModel.clearError() },
+                placeholder = { Text("Confirm password") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Rounded.Lock,
+                        contentDescription = "Confirm password",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { confirmVisible = !confirmVisible }) {
+                        Icon(
+                            imageVector = if (confirmVisible) Icons.Rounded.VisibilityOff
+                            else Icons.Rounded.Visibility,
+                            contentDescription = if (confirmVisible) "Hide confirm password"
+                            else "Show confirm password",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                visualTransformation = if (confirmVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                isError = state.fieldErrors.containsKey("confirmPassword"),
+                supportingText = state.fieldErrors["confirmPassword"]
+                    ?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                colors = fieldColors(),
+                modifier = Modifier.fillMaxWidth()
             )
 
-            // ---- Top-level error ----
+            // ---- Top-level error (e.g. email already in use) ----
             state.error?.let { message ->
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -204,8 +266,8 @@ fun SignUpScreen(
                 onClick = {
                     viewModel.signUp(
                         username = username,
-                        email = email.trim(),
-                        phone = phone.trim(),
+                        email = email,
+                        phone = phone,
                         password = password,
                         confirmPassword = confirmPassword
                     )
@@ -233,9 +295,9 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // ---- Back to login link ----
             Row(
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -246,70 +308,11 @@ fun SignUpScreen(
                     "Log In",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onNavigateBack() }
+                    modifier = Modifier.clickable { onBackToLogin() }
                 )
             }
 
             Spacer(Modifier.height(24.dp))
-        }
-    }
-}
-
-@Composable
-private fun AuthField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    keyboardType: KeyboardType,
-    error: String? = null,
-    isPassword: Boolean = false,
-    passwordVisible: Boolean = false,
-    onTogglePassword: (() -> Unit)? = null
-) {
-    Column {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = { Text(label) },
-            leadingIcon = {
-                Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.secondary)
-            },
-            trailingIcon = if (isPassword && onTogglePassword != null) {
-                {
-                    IconButton(onClick = onTogglePassword) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff
-                            else Icons.Rounded.Visibility,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else null,
-            visualTransformation = if (isPassword && !passwordVisible)
-                PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            isError = error != null,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (error != null) {
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-            )
         }
     }
 }

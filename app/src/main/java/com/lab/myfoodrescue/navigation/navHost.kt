@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.google.firebase.auth.FirebaseAuth
 import com.lab.myfoodrescue.ui.screens.LoginScreen
 import com.lab.myfoodrescue.ui.screens.SignUpScreen
 import com.lab.myfoodrescue.ui.screens.main.MainAppScreen
@@ -13,16 +12,9 @@ import com.lab.myfoodrescue.ui.screens.main.MainAppScreen
 fun FoodRescueNavHost(
     navController: NavHostController
 ) {
-    // Auth gate: start on Main if already logged in, otherwise on Login.
-    val startDestination =
-        if (FirebaseAuth.getInstance().currentUser != null)
-            Screen.MAIN.route
-        else
-            Screen.LOGIN.route
-
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = Screen.LOGIN.route
     ) {
         composable(Screen.LOGIN.route) {
             LoginScreen(
@@ -41,10 +33,10 @@ fun FoodRescueNavHost(
             SignUpScreen(
                 onSignUpSuccess = {
                     navController.navigate(Screen.MAIN.route) {
-                        popUpTo(Screen.LOGIN.route) { inclusive = true }
+                        popUpTo(0) { inclusive = true }
                     }
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 

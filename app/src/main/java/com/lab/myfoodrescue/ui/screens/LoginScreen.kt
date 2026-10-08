@@ -1,5 +1,6 @@
 package com.lab.myfoodrescue.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Eco
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Button
@@ -27,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -236,6 +239,30 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // ---- Continue as Guest ----
+            OutlinedButton(
+                onClick = { viewModel.loginAsGuest() },
+                enabled = !state.isLoading,
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.size(8.dp))
+                Text("Continue as Guest", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             // ---- Sign up link ----
             Row(
                 horizontalArrangement = Arrangement.Center,
@@ -258,9 +285,10 @@ fun LoginScreen(
     }
 }
 
-// Small helper to keep both fields visually consistent
+// Small helper to keep text fields visually consistent across
+// Login and Sign Up screens (shared within this package)
 @Composable
-private fun fieldColors() = OutlinedTextFieldDefaults.colors(
+fun fieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = MaterialTheme.colorScheme.primary,
     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
     focusedContainerColor = MaterialTheme.colorScheme.surface,
