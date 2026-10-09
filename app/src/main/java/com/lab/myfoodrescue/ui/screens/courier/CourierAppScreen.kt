@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.lab.myfoodrescue.R
 import com.lab.myfoodrescue.data.repository.ReservationStatus
 import com.lab.myfoodrescue.data.repository.ReservationStore
 import com.lab.myfoodrescue.ui.screens.CourierDetailState
@@ -81,14 +82,16 @@ private val ASSIGNED_PICKUPS = listOf(
         name = "Mixed Vegetables",
         expiryDate = "",
         distanceKm = "",
+
         foodType = "Vegetables",
         quantity = "2 kg",
         location = "Yogi 8 Canteen",
-        donorName = "Recipient: Sitrad (UPTM Student)",
+        donorName = "Recipient: Sitrad ",
         pickupWindow = "2:00 PM - 2:30 PM",
         pickupPoint = "Yogi 8 Canteen",
         description = "Mixed vegetables packed by Yogi 8 Canteen for the food rescue " +
-            "programme. Collect within the pickup window and deliver straight to the recipient."
+            "programme. Collect within the pickup window and deliver straight to the recipient.",
+        photoRes = R.drawable.fresh_veg
     ),
     SurplusPost(
         id = "FR20260046",
@@ -98,11 +101,14 @@ private val ASSIGNED_PICKUPS = listOf(
         foodType = "Bakery",
         quantity = "3 packs",
         location = "Yogi 10 Canteen",
-        donorName = "Recipient: Siti (UPTM Staff)",
+        donorName = "Recipient: Siti ",
         pickupWindow = "4:00 PM - 4:30 PM",
+
         pickupPoint = "Yogi 10 Canteen",
         description = "Assorted bread and pastry packs rescued from Yogi 10 Canteen. " +
-            "Collect on time and deliver to the recipient right away."
+            "Collect on time and deliver to the recipient right away.",
+        photoRes = R.drawable.bread_and_pastry,
+
     )
 )
 

@@ -34,8 +34,7 @@ class AuthRepository(
     }
 
     /**
-     * Creates the Auth account, sets the display name, then stores the
-     * full profile (username, email, phone) in Firestore under users/{uid}.
+     * Creates the Auth account, sets the display name, then stores in Firestore
      */
     suspend fun signUp(user: UserProfile, password: String): FirebaseUser {
         val created = auth.createUserWithEmailAndPassword(user.email, password).await().user
