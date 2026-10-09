@@ -75,13 +75,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// ============================================================
+
 //  DONOR — app shell: bottom nav with
 //  Donate | Deliver | History | Profile  +  FAB (List Food)
 //  Donate: the donor's listed food (click -> Cancel Listing).
 //  Deliver: listings reserved by recipients (live status).
 //  History: listings the courier marked as delivered.
-// ============================================================
+
 
 private data class DonorNavItem(
     val label: String,
@@ -108,7 +108,7 @@ fun DonorAppScreen(
     var cancelListing by remember { mutableStateOf<DonorListing?>(null) }
     var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
-    // ---- Greeting name ----
+    //  Greeting name
     val state by authViewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { authViewModel.loadProfile() }
     val donorName = state.profile?.username?.takeIf { it.isNotBlank() }
@@ -133,7 +133,7 @@ fun DonorAppScreen(
     val listingToCancel = cancelListing
     val currentReservationId = selectedReservationId
     when {
-        // ---- Full-screen List Food form (from the FAB) ----
+        //Full-screen List Food form (from the FAB)
         showListFood -> ListFoodScreen(
             onBack = { showListFood = false },
             onPosted = {
@@ -142,7 +142,7 @@ fun DonorAppScreen(
             }
         )
 
-        // ---- Full-screen reservation details (Deliver / History) ----
+        //  Full-screen reservation details (Deliver / History)
         currentReservationId != null -> ReservationDetailsScreen(
             reservationId = currentReservationId,
             onBack = { selectedReservationId = null }
@@ -214,7 +214,7 @@ fun DonorAppScreen(
         }
     }
 
-    // ---- Cancel listing dialog (delete the post) ----
+    //  Cancel listing dialog (delete the post)
     if (listingToCancel != null) {
         AlertDialog(
             onDismissRequest = { cancelListing = null },
@@ -255,7 +255,7 @@ private fun DonorDonateScreen(
     ) {
         Spacer(Modifier.height(16.dp))
 
-        // ---- Greeting ----
+        //  Greeting
         Text(
             text = "Hello, $donorName!",
             fontSize = 24.sp,

@@ -83,7 +83,7 @@ fun PostDetailScreen(
         bottomBar = {
             Surface(color = MaterialTheme.colorScheme.surface) {
                 if (courier == null) {
-                    // ---- Recipient mode: single Reserve button ----
+                    //Recipient mode: single Reserve button
                     Button(
                         onClick = onReserve,
                         enabled = !isReserved,
@@ -107,7 +107,7 @@ fun PostDetailScreen(
                         )
                     }
                 } else {
-                    // ---- Courier mode: schedule pickup, then deliver ----
+                    //Courier mode: schedule pickup, then deliver
                     Button(
                         onClick = if (courier.isScheduled) courier.onDelivered
                         else courier.onSchedule,
@@ -146,7 +146,7 @@ fun PostDetailScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // ---- Photo area with back arrow (top-left only) ----
+            //Photo area with back arrow (top-left only)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -207,7 +207,7 @@ fun PostDetailScreen(
                 }
             }
 
-            // ---- Details ----
+            //Details
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

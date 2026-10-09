@@ -7,9 +7,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
-// ============================================================
+
 //  MODEL — user data + the single source of truth for auth ops
-// ============================================================
+
 
 data class UserProfile(
     val username: String = "",

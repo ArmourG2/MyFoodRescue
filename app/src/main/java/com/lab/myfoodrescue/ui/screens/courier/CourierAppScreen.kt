@@ -70,10 +70,10 @@ import com.lab.myfoodrescue.ui.theme.FlashGreenContainer
 import com.lab.myfoodrescue.ui.theme.FlashGreenDark
 import com.lab.myfoodrescue.viewmodel.AuthViewModel
 
-// ============================================================
+
 //  COURIER — hardcoded assigned pickups for the prototype
 //  (matches the volunteer collector dashboard mock)
-// ============================================================
+
 
 private val ASSIGNED_PICKUPS = listOf(
     SurplusPost(
@@ -145,7 +145,7 @@ fun CourierAppScreen(
 
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    // ---- Courier job state ----
+    // Courier job state
     val hardcodedJobs = remember {
         ASSIGNED_PICKUPS.map { CourierJob(key = it.id, post = it, reservationId = null) }
     }
@@ -155,7 +155,7 @@ fun CourierAppScreen(
     var selectedJob by remember { mutableStateOf<CourierJob?>(null) }
     var schedulingJob by remember { mutableStateOf<CourierJob?>(null) }
 
-    // ---- Courier identity (real account info for reservations) ----
+    //  Courier identity (real account info for reservations)
     val state by authViewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { authViewModel.loadProfile() }
     val firebaseUser = FirebaseAuth.getInstance().currentUser
@@ -165,7 +165,7 @@ fun CourierAppScreen(
     val courierPhone = state.profile?.phone?.takeIf { it.isNotBlank() }
         ?: firebaseUser?.phoneNumber
 
-    // ---- Live recipient reservations by status ----
+    //  Live recipient reservations by status
     val reservedJobs = ReservationStore.reservations
         .filter { it.status == ReservationStatus.RESERVED }
         .map {

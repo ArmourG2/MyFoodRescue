@@ -4,12 +4,12 @@ import androidx.compose.runtime.mutableStateListOf
 import com.lab.myfoodrescue.R
 import com.lab.myfoodrescue.ui.screens.SurplusPost
 
-// ============================================================
+
 //  Donor listings — what the donor has posted for rescue.
 //  Flow: donor posts (Donate tab, "Available") -> recipient
 //  reserves (moves to donor's Deliver tab) -> courier marks
 //  delivered (moves to donor's History tab). In-memory prototype.
-// ============================================================
+
 
 data class DonorListing(
     val id: String,              // "DL2026001", ...

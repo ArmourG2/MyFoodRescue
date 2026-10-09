@@ -126,7 +126,7 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // ---- Search bar: rounded field + filter icon on the right ----
+            //Search bar: rounded field + filter icon on the right
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -163,7 +163,7 @@ fun SearchScreen(
                 }
             }
 
-            // ---- Results count ----
+            //Results count
             Text(
                 text = "${results.size} results",
                 fontSize = 13.sp,
@@ -174,7 +174,7 @@ fun SearchScreen(
             if (results.isEmpty()) {
                 EmptySearchState()
             } else {
-                // ---- Surplus food listing posts (same cards as Home) ----
+                // Surplus food listing posts (same cards as Home)
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

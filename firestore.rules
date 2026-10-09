@@ -1,10 +1,10 @@
 rules_version = '2';
 
-// ============================================================
+
 //  MyFoodRescue — Firestore Security Rules
 //  Paste into: Firebase Console → Firestore Database → Rules
 //  (or deploy with: firebase deploy --only firestore:rules)
-// ============================================================
+
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -36,7 +36,7 @@ service cloud.firestore {
       allow delete: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // ---- Helpers ----
+    // Helpers
     function isSignedIn() {
       return request.auth != null;
     }
@@ -48,7 +48,7 @@ service cloud.firestore {
              || request.resource.data.role in ['RECIPIENT', 'COURIER', 'DONOR'];
     }
 
-    // ==========================================================
+
     //  FUTURE COLLECTIONS (uncomment when you add them):
     //
     //  // Food listings: public read, owner-only edit
@@ -67,6 +67,6 @@ service cloud.firestore {
     //    allow update: if isSignedIn();
     //    allow read: if isSignedIn();
     //  }
-    // ==========================================================
+
   }
 }

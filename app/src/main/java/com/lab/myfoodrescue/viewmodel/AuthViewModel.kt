@@ -10,10 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// ============================================================
 //  VIEWMODEL — holds auth UI state, validation rules, and calls
 //  the repository. Survives rotation; screens only observe state.
-// ============================================================
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -29,9 +27,7 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    // ---------------------------------------------------------
     //  Validation rules
-    // ---------------------------------------------------------
     private fun validateLogin(email: String, password: String): Map<String, String> {
         val errors = mutableMapOf<String, String>()
         if (email.isBlank()) errors["email"] = "Email is required."
@@ -69,9 +65,7 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
     private fun isValidEmail(email: String) =
         android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 
-    // ---------------------------------------------------------
     //  Actions
-    // ---------------------------------------------------------
     fun login(email: String, password: String) {
         val errors = validateLogin(email, password)
         if (errors.isNotEmpty()) {
@@ -133,18 +127,18 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
         }
     }
 
-    /** Skips Firebase auth entirely and enters the app as a guest. */
-    fun loginAsGuest() {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                isLoggedIn = true,
-                isGuest = true,
-                error = null,
-                fieldErrors = emptyMap()
-            )
-        }
-    }
+
+    //fun loginAsGuest() {
+    //        _uiState.update {
+    //            it.copy(
+    //                isLoading = false,
+    //                isLoggedIn = true,
+    //                isGuest = true,
+    //                error = null,
+    //                fieldErrors = emptyMap()
+    //            )
+    //        }
+    //    }
 
     fun signUp(
         username: String, email: String, phone: String,

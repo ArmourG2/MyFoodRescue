@@ -3,14 +3,13 @@ package com.lab.myfoodrescue.data.repository
 import androidx.compose.runtime.mutableStateListOf
 import com.lab.myfoodrescue.ui.screens.SurplusPost
 
-// ============================================================
 //  Reservation flow — a recipient reserves a post (RESERVED),
 //  the post appears in the courier's Assigned Pickups. Courier
 //  taps "Pick Schedule", sets date + time -> PICKUP_SCHEDULED
 //  (the reservation shows the real courier's info and the set
 //  schedule). Courier taps "Mark as Delivered" -> COLLECTED
 //  (recipient history). In-memory for the prototype.
-// ============================================================
+
 
 enum class ReservationStatus { RESERVED, PICKUP_SCHEDULED, COLLECTED }
 

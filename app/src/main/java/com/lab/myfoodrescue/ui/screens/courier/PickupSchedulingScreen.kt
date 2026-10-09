@@ -46,12 +46,12 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 
-// ============================================================
+
 //  VIEW — Pickup Scheduling (courier). Lets the courier set
 //  when to pick up an item: pick a date on the calendar and a
 //  time chip, then confirm with the bottom button. After
 //  confirmation the job moves to the Scheduled tab.
-// ============================================================
+
 
 private val TIME_SLOTS = listOf(
     "9:00 AM", "10:00 AM", "11:00 AM",
@@ -82,7 +82,7 @@ fun PickupSchedulingScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // ---- Header: back arrow + title ----
+            //  Header: back arrow + title
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -110,7 +110,7 @@ fun PickupSchedulingScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // ---- Select Date ----
+            //  Select Date
             Text(
                 text = "Select Date",
                 fontSize = 16.sp,
@@ -129,7 +129,7 @@ fun PickupSchedulingScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // ---- Select Time ----
+            //  Select Time
             Text(
                 text = "Select Time",
                 fontSize = 16.sp,
@@ -162,7 +162,7 @@ fun PickupSchedulingScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ---- Confirm ----
+            //  Confirm
             Button(
                 onClick = {
                     val date = selectedDate

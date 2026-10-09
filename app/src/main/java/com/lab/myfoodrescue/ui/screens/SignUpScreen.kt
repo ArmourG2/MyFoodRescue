@@ -87,7 +87,7 @@ fun SignUpScreen(
         ) {
             Spacer(Modifier.height(48.dp))
 
-            // ---- Title ----
+            // Title
             Text(
                 text = "Create Account",
                 fontSize = 26.sp,
@@ -105,7 +105,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // ---- Username field ----
+            //  Username field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it; viewModel.clearError() },
@@ -128,7 +128,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Email field ----
+            //  Email field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it; viewModel.clearError() },
@@ -152,7 +152,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Phone field ----
+            // Phone field
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it; viewModel.clearError() },
@@ -176,7 +176,7 @@ fun SignUpScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Password field ----
+            //  Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it; viewModel.clearError() },

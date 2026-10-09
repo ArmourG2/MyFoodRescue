@@ -39,7 +39,7 @@ fun ReservedScreen(
     onOpenReservation: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // ---- Section header ----
+        //Section header
         Row(
             verticalAlignment = Alignment.Bottom,
             modifier = Modifier

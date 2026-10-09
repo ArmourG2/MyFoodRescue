@@ -96,7 +96,7 @@ fun LoginScreen(
         ) {
             Spacer(Modifier.height(64.dp))
 
-            // ---- Logo ----
+            //Logo
             Box(
                 modifier = Modifier
                     .size(88.dp)
@@ -130,7 +130,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(40.dp))
 
-            // ---- Email field ----
+            //Email field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it; viewModel.clearError() },
@@ -154,7 +154,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Password field ----
+            //Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it; viewModel.clearError() },
@@ -188,7 +188,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // ---- Top-level error (e.g. wrong credentials) ----
+            //Top-level error (e.g. wrong credentials)
             state.error?.let { message ->
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -248,31 +248,31 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- Continue as Guest ----
-            OutlinedButton(
-                onClick = { viewModel.loginAsGuest() },
-                enabled = !state.isLoading,
-                shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Icon(
-                    Icons.Rounded.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.size(8.dp))
-                Text("Continue as Guest", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            }
+            //  Continue as Guest
+            //OutlinedButton(
+            //                onClick = { viewModel.loginAsGuest() },
+            //                enabled = !state.isLoading,
+            //                shape = RoundedCornerShape(10.dp),
+            //                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+            //                colors = ButtonDefaults.outlinedButtonColors(
+            //                    contentColor = MaterialTheme.colorScheme.primary
+            //                ),
+            //                modifier = Modifier
+            //                    .fillMaxWidth()
+            //                    .height(52.dp)
+            //            ) {
+            //                Icon(
+            //                    Icons.Rounded.Person,
+            //                    contentDescription = null,
+            //                    modifier = Modifier.size(20.dp)
+            //                )
+            //                Spacer(Modifier.size(8.dp))
+            //                Text("Continue as Guest", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            //            }
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- Sign up link ----
+            // Sign up link
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()

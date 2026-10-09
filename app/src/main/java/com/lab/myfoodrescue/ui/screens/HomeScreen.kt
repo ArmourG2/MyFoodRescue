@@ -208,7 +208,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // ---- Section header ----
+            //Section header
             val posts = remember(DonorStore.listings.size) { allPosts() }
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -230,7 +230,7 @@ fun HomeScreen(
                 )
             }
 
-            // ---- 2-column grid of surplus posts ----
+            //2-column grid of surplus posts
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -272,7 +272,7 @@ fun SurplusCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
-            // ---- Photo area ----
+            //Photo area
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -297,7 +297,7 @@ fun SurplusCard(
                     }
                 }
 
-                // ---- Food type badge (top-left) ----
+                //Food type badge (top-left)
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = FlashGreen,

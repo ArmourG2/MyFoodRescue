@@ -75,12 +75,12 @@ fun MainAppScreen(
 
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    // ---- Search + Filter state (hoisted so it survives navigation) ----
+    // Search + Filter state (hoisted so it survives navigation)
     var searchText by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf(SearchFilter()) }
     var showFilter by remember { mutableStateOf(false) }
 
-    // ---- Navigation + reservation state (in-memory) ----
+    //Navigation + reservation state (in-memory)
     var selectedPost by remember { mutableStateOf<SurplusPost?>(null) }
     var selectedReservationId by remember { mutableStateOf<String?>(null) }
 

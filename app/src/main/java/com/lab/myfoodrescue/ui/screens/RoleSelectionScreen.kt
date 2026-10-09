@@ -79,7 +79,7 @@ fun RoleSelectionScreen(
 
             Spacer(Modifier.height(48.dp))
 
-            // ---- Recipient + Donor side by side ----
+            //Recipient + Donor side by side
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -107,7 +107,7 @@ fun RoleSelectionScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- Courier centered below ----
+            //Courier centered below
             RoleCard(
                 role = UserRole.COURIER,
                 icon = Icons.Rounded.LocalShipping,

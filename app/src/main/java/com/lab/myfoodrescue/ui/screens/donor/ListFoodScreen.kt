@@ -61,12 +61,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// ============================================================
+
 //  VIEW — List Food form (donor FAB). The donor fills in the
 //  food details and posts the listing; it appears at the top
 //  of the Donate tab and in the recipient feed.
-// ============================================================
-
+//
 private val PRESET_PHOTOS = listOf(
     R.drawable.fresh_veg, R.drawable.chicken_rice, R.drawable.butter_crois,
     R.drawable.apple, R.drawable.milk, R.drawable.veg_curry,
@@ -105,7 +104,7 @@ fun ListFoodScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // ---- Header: back arrow + title ----
+            // Header: back arrow + title
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -133,7 +132,7 @@ fun ListFoodScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // ---- Photo (optional) ----
+            //  Photo (optional)
             Surface(
                 onClick = { showPhotoPicker = true },
                 enabled = true,
@@ -178,7 +177,7 @@ fun ListFoodScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- Food Name ----
+            //  Food Name
             FormField(
                 label = "Food Name",
                 required = true,
@@ -190,7 +189,7 @@ fun ListFoodScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Food Type (chips) ----
+            // Food Type (chips)
             Text(
                 text = "Food Type *",
                 fontSize = 13.sp,
@@ -219,7 +218,7 @@ fun ListFoodScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---- Expire Date ----
+            // Expire Date
             FormField(
                 label = "Expire Date",
                 required = true,

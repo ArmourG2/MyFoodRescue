@@ -85,7 +85,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ---- Avatar with initials ----
+            //Avatar with initials
             val name = if (state.isGuest) {
                 "Guest"
             } else {
@@ -124,7 +124,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ---- Info card ----
+            //Info card
             androidx.compose.material3.Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = androidx.compose.material3.CardDefaults.cardColors(
@@ -166,7 +166,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // ---- Log out ----
+            //Log out
             Button(
                 onClick = { showLogoutDialog = true },
                 shape = RoundedCornerShape(12.dp),
@@ -209,7 +209,7 @@ fun ProfileScreen(
         )
     }
 
-    // ---- Change role dialog ----
+    // Change role dialog
     if (showRoleDialog) {
         AlertDialog(
             onDismissRequest = { showRoleDialog = false },

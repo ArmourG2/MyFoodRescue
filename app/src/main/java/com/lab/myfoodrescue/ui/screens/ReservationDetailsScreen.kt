@@ -107,7 +107,7 @@ fun ReservationDetailsScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // ---- Header: back arrow + title ----
+            //Header: back arrow + title
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -135,7 +135,7 @@ fun ReservationDetailsScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- Reservation ID + food + progress card ----
+            // Reservation ID + food + progress card
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surface,
@@ -172,7 +172,7 @@ fun ReservationDetailsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                     Spacer(Modifier.height(12.dp))
 
-                    // ---- Food summary ----
+                    //Food summary
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         PostThumb(post = reservation.post, size = 64.dp)
                         Spacer(Modifier.width(12.dp))
